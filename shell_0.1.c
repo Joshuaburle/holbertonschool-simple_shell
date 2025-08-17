@@ -44,8 +44,8 @@ int main(void)
 		pid = fork();
 		if (pid == -1)
 		{
-			perror("fork");
-			exit(EXIT_FAILURE);
+			perror("Error");
+			continue;
 		}
 
 		if (pid == 0) /* Child process */
@@ -54,13 +54,17 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				perror("execve");
+				fprintf(stderr, "./shell: No such file or directory\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 		else /* Parent process */
 		{
-			wait(NULL); /* Wait for child to finish */
+			if (wait(NULL) == -1)
+			{
+				perror("wait");
+				continue;
+			}
 		}
 	}
 
