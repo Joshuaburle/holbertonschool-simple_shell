@@ -5,6 +5,11 @@
 #include <sys/wait.h>
 #include <string.h>
 
+/**
+ * main - Entry point of the simple shell program
+ * @void: No parameters
+ * Return: Always 0 (Success)
+ */
 int main(void)
 {
 	char *line = NULL;
@@ -43,7 +48,7 @@ int main(void)
 			exit(EXIT_FAILURE);
 		}
 
-		if (pid == 0)
+		if (pid == 0) /* Child process */
 		{
 			argv[0] = line;
 			argv[1] = NULL;
@@ -53,12 +58,12 @@ int main(void)
 				exit(EXIT_FAILURE);
 			}
 		}
-		else
+		else /* Parent process */
 		{
-			wait(NULL);
+			wait(NULL); /* Wait for child to finish */
 		}
 	}
 
 	free(line);
-	return 0;
+	return (0);
 }
