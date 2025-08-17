@@ -6,7 +6,4 @@
 #include <unistd.h>
 #include <string.h>
 
-char **_split_line(char *line);
-char *find_command(char *command);
-
 #endif
