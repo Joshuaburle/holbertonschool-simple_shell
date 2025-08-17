@@ -38,14 +38,18 @@ int main(void)
 		if (strlen(line) == 0)
 			continue;
 
+		/* Vérifier que la ligne n'est pas trop longue */
+		if (strlen(line) > 1024)
+			continue;
+
 		if (strcmp(line, "exit") == 0)
 			break;
 
 		pid = fork();
 		if (pid == -1)
 		{
-			perror("fork");
-			exit(EXIT_FAILURE);
+			perror("Error");
+			continue; /* Continuer au lieu de sortir */
 		}
 
 		if (pid == 0) /* Child process */
