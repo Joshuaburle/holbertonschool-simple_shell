@@ -64,7 +64,11 @@ int main(void)
 		}
 		else /* Parent process */
 		{
-			wait(NULL); /* Wait for child to finish */
+			if (wait(NULL) == -1)
+			{
+				perror("wait");
+				continue;
+			}
 		}
 	}
 
