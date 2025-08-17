@@ -35,12 +35,6 @@ int main(void)
 
 		line[strcspn(line, "\n")] = '\0';
 
-		if (strlen(line) == 0)
-			continue;
-
-		if (strcmp(line, "exit") == 0)
-			break;
-
 		pid = fork();
 		if (pid == -1)
 		{
@@ -48,7 +42,7 @@ int main(void)
 			continue;
 		}
 
-		if (pid == 0) /* Child process */
+		if (pid == 0)
 		{
 			argv[0] = line;
 			argv[1] = NULL;
@@ -58,7 +52,7 @@ int main(void)
 				exit(EXIT_FAILURE);
 			}
 		}
-		else /* Parent process */
+		else
 		{
 			if (wait(NULL) == -1)
 			{
