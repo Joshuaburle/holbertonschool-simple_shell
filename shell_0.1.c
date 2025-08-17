@@ -54,7 +54,7 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				perror("execve");
+				fprintf(stderr, "./shell: No such file or directory\n");
 				exit(EXIT_FAILURE);
 			}
 		}
