@@ -32,7 +32,7 @@ char *find_command(char *command)
 
 	/* 3. Faire une copie modifiable */
 	path_copy = strdup(path_env);
-	if (path_copy == NULL)
+	if (!path_copy)
 	{
 		perror("strdup");
 		exit(EXIT_FAILURE);
@@ -65,9 +65,9 @@ char *find_command(char *command)
  */
 char **_split_line(char *line)
 {
-	int bufsize = 64, position = 0, i, j, start;
+	int bufsize = 64, position = 0;
 	char **tokens = malloc(bufsize * sizeof(char *));
-	char *line_copy;
+	char *token;
 
 	if (!tokens)
 	{
@@ -75,51 +75,10 @@ char **_split_line(char *line)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Make a copy to avoid modifying the original */
-	line_copy = strdup(line);
-	if (!line_copy)
+	token = strtok(line, " \t\r\n");
+	while (token != NULL)
 	{
-		free(tokens);
-		fprintf(stderr, "Allocation error\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Manual parsing to handle multiple delimiters properly */
-	i = 0;
-	while (line_copy[i])
-	{
-		/* Skip leading delimiters */
-		while (line_copy[i] && (line_copy[i] == ' ' || line_copy[i] == '\t' || 
-		       line_copy[i] == '\r' || line_copy[i] == '\n'))
-			i++;
-
-		if (line_copy[i] == '\0')
-			break;
-
-		/* Mark start of token */
-		start = i;
-
-		/* Find end of token */
-		while (line_copy[i] && line_copy[i] != ' ' && line_copy[i] != '\t' && 
-		       line_copy[i] != '\r' && line_copy[i] != '\n')
-			i++;
-
-		/* Null-terminate the token */
-		line_copy[i] = '\0';
-
-		/* Add token to array */
-		tokens[position] = strdup(&line_copy[start]);
-		if (!tokens[position])
-		{
-			/* Clean up on allocation failure */
-			for (j = 0; j < position; j++)
-				free(tokens[j]);
-			free(tokens);
-			free(line_copy);
-			fprintf(stderr, "Allocation error\n");
-			exit(EXIT_FAILURE);
-		}
-
+		tokens[position] = token;
 		position++;
 
 		if (position >= bufsize)
@@ -128,22 +87,15 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				/* Clean up on reallocation failure */
-				for (j = 0; j < position; j++)
-					free(tokens[j]);
-				free(tokens);
-				free(line_copy);
 				fprintf(stderr, "Allocation error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 
-		if (line_copy[i])
-			i++;
+		token = strtok(NULL, " \t\r\n");
 	}
 
 	tokens[position] = NULL;
-	free(line_copy);
 	return (tokens);
 }
 
