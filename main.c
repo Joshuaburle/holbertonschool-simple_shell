@@ -7,8 +7,7 @@
 void sigint_handler(int sig)
 {
 	(void)sig;
-	write(STDOUT_FILENO, "\n($) ", 5);
-	fflush(stdout);
+	write(STDOUT_FILENO, "\n", 1);
 }
 
 /**

@@ -1,0 +1,20 @@
+# Compiled files
+hsh
+*.o
+*.out
+
+# Test files
+test_*
+*_test
+*.test
+
+# Temporary files
+*~
+*.tmp
+*.temp
+
+# VS Code
+.vscode/
+
+# Other
+.DS_Store
