@@ -25,8 +25,9 @@ char *find_command(char *command)
 
 	/* 2. Récupérer le PATH */
 	path_env = getenv("PATH");
-	if (!path_env)
+	if (!path_env || strlen(path_env) == 0)
 	{
+		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
 		return NULL;
 	}
 
