@@ -59,11 +59,7 @@ int main(void)
 		}
 		else
 		{
-			if (wait(NULL) == -1)
-			{
-				perror("wait");
-				continue;
-			}
+			wait(NULL);
 		}
 	}
 
