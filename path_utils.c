@@ -8,18 +8,9 @@
 char *get_path(void)
 {
 	char *path_env, *path_copy;
-	int i;
 
 	/* Récupérer la variable d'environnement PATH */
-	path_env = NULL;
-	for (i = 0; environ[i] != NULL; i++)
-	{
-		if (strncmp(environ[i], "PATH=", 5) == 0)
-		{
-			path_env = environ[i] + 5;
-			break;
-		}
-	}
+	path_env = getenv("PATH");
 	if (path_env == NULL)
 		return (NULL);
 
@@ -38,15 +29,7 @@ char *get_path(void)
  */
 int file_exists(char *filepath)
 {
-	struct stat st;
-
-	if (stat(filepath, &st) == 0)
-	{
-		if (S_ISREG(st.st_mode) && (st.st_mode & S_IXUSR))
-			return (1);
-	}
-
-	return (0);
+	return (access(filepath, X_OK) == 0);
 }
 
 /**
