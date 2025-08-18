@@ -6,9 +6,9 @@
  */
 void sigint_handler(int sig)
 {
-(void)sig;
-write(STDOUT_FILENO, "\n($) ", 5);
-fflush(stdout);
+	(void)sig;
+	write(STDOUT_FILENO, "\n($) ", 5);
+	fflush(stdout);
 }
 
 /**
@@ -19,35 +19,35 @@ fflush(stdout);
  */
 int main(int argc, char **argv)
 {
-char *line;
-int status = 1;
+	char *line;
+	int status = 1;
 
-(void)argc;
+	(void)argc;
 
-/* Set up signal handling for Ctrl+C */
-signal(SIGINT, sigint_handler);
+	/* Set up signal handling for Ctrl+C */
+	signal(SIGINT, sigint_handler);
 
-while (status)
-{
-/* Display prompt in interactive mode */
-if (isatty(STDIN_FILENO))
-display_prompt();
+	while (status)
+	{
+		/* Display prompt in interactive mode */
+		if (isatty(STDIN_FILENO))
+			display_prompt();
 
-/* Read command line */
-line = read_line();
-if (line == NULL)
-{
-if (isatty(STDIN_FILENO))
-write(STDOUT_FILENO, "\n", 1);
-break;
-}
+		/* Read command line */
+		line = read_line();
+		if (line == NULL)
+		{
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "\n", 1);
+			break;
+		}
 
-/* Execute command */
-status = execute_command(line, argv[0]);
+		/* Execute command */
+		status = execute_command(line, argv[0]);
 
-/* Clean up */
-free(line);
-}
+		/* Clean up */
+		free(line);
+	}
 
-return (0);
+	return (0);
 }
