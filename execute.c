@@ -32,7 +32,7 @@ char *find_command(char *command)
 
 	/* 3. Faire une copie modifiable */
 	path_copy = strdup(path_env);
-	if (!path_copy)
+	if (path_copy == NULL)
 	{
 		perror("strdup");
 		exit(EXIT_FAILURE);
@@ -160,7 +160,6 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
-	/* Check for NULL or empty command */
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
@@ -168,13 +167,6 @@ int execute_command(char *command, char *program_name)
 	argv = _split_line(command);
 	if (argv == NULL)
 		return (1);
-
-	/* Check if we have any tokens after splitting */
-	if (argv[0] == NULL)
-	{
-		free(argv);
-		return (1);
-	}
 
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
@@ -198,7 +190,6 @@ int execute_command(char *command, char *program_name)
 	if (pid == 0)
 	{
 		/* Child process */
-		/* Replace argv[0] with the full path */
 		argv[0] = full_path;
 		if (execve(full_path, argv, environ) == -1)
 		{
