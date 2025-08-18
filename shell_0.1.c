@@ -20,11 +20,12 @@ int main(void)
 	pid_t pid;
 	int interactive = isatty(STDIN_FILENO);
 	char *argv[2];
+	int line_number = 1;
 
 	while (1)
 	{
 		if (interactive)
-			printf("#cisfun$ ");
+			printf("($) ");
 
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
@@ -38,7 +39,10 @@ int main(void)
 			line[nread - 1] = '\0';
 
 		if (strlen(line) == 0 || line[0] == ' ' || line[0] == '\t')
+		{
+			line_number++;
 			continue;
+		}
 
 		if (strcmp(line, "exit") == 0)
 		{
@@ -59,7 +63,7 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				fprintf(stderr, "./shell: No such file or directory\n");
+				fprintf(stderr, "./hsh: %d: %s: not found\n", line_number, line);
 				exit(127);
 			}
 		}
@@ -67,6 +71,8 @@ int main(void)
 		{
 			wait(NULL);
 		}
+		
+		line_number++;
 	}
 
 	free(line);
