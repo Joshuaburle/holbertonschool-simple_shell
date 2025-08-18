@@ -15,6 +15,7 @@ void display_prompt(void);
 char *read_line(void);
 int is_empty_or_whitespace(char *line);
 int execute_command(char *command, char *program_name);
+char **_split_line(char *line);
 void sigint_handler(int sig);
 
 /* Global variables */
