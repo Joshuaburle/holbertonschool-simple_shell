@@ -24,7 +24,7 @@ int execute_command(char *command, char *program_name)
 		argv[1] = NULL;
 		if (execve(command, argv, environ) == -1)
 		{
-			fprintf(stderr, "%s: 1: %s: not found\n", program_name, command);
+			perror(program_name);
 			_exit(127);
 		}
 	}
