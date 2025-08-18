@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <string.h>
 
+extern char **environ;
+
 /**
  * main - Entry point of the simple shell program
  * @void: No parameters
@@ -16,7 +18,6 @@ int main(void)
 	size_t len = 0;
 	ssize_t nread;
 	pid_t pid;
-	extern char **environ;
 	int interactive = isatty(STDIN_FILENO);
 	char *argv[2];
 	int line_number = 1;
@@ -34,18 +35,15 @@ int main(void)
 			break;
 		}
 
-		/* Remove newline character */
 		if (nread > 0 && line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		/* Skip empty lines and lines with only spaces/tabs */
 		if (strlen(line) == 0 || line[0] == ' ' || line[0] == '\t')
 		{
 			line_number++;
 			continue;
 		}
 
-		/* Handle exit command */
 		if (strcmp(line, "exit") == 0)
 		{
 			free(line);
@@ -65,7 +63,8 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				fprintf(stderr, "./shell: line %d: %s: command not found\n", line_number, line);
+				fprintf(stderr, "./shell: line %d: %s: command not found\n",
+					line_number, line);
 				exit(127);
 			}
 		}
@@ -73,7 +72,6 @@ int main(void)
 		{
 			wait(NULL);
 		}
-		
 		line_number++;
 	}
 
