@@ -15,10 +15,6 @@ int execute_command(char *command, char *program_name)
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
-	/* Handle exit command */
-	if (strcmp(command, "exit") == 0)
-		return (0);
-
 	/* Fork process */
 	pid = fork();
 	if (pid == 0)
