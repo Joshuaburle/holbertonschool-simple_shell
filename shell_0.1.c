@@ -35,13 +35,21 @@ int main(void)
 		}
 
 		/* Remove newline character */
-		line[strcspn(line, "\n")] = '\0';
+		if (nread > 0 && line[nread - 1] == '\n')
+			line[nread - 1] = '\0';
 
-		/* Skip empty lines */
-		if (strlen(line) == 0)
+		/* Skip empty lines and lines with only spaces/tabs */
+		if (strlen(line) == 0 || line[0] == ' ' || line[0] == '\t')
 		{
 			line_number++;
 			continue;
+		}
+
+		/* Handle exit command */
+		if (strcmp(line, "exit") == 0)
+		{
+			free(line);
+			exit(0);
 		}
 
 		pid = fork();
@@ -58,7 +66,7 @@ int main(void)
 			if (execve(line, argv, environ) == -1)
 			{
 				fprintf(stderr, "./shell: line %d: %s: command not found\n", line_number, line);
-				exit(EXIT_FAILURE);
+				exit(127);
 			}
 		}
 		else
