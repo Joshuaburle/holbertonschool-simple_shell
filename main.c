@@ -14,7 +14,7 @@ int main(void)
 		/* Display prompt in interactive mode */
 		if (isatty(STDIN_FILENO))
 			display_prompt();
-		
+
 		/* Read command line */
 		line = read_line();
 		if (line == NULL)
@@ -23,13 +23,13 @@ int main(void)
 				write(STDOUT_FILENO, "\n", 1);
 			break;
 		}
-		
+
 		/* Execute command */
 		status = execute_command(line);
-		
+
 		/* Clean up */
 		free(line);
 	}
-	
+
 	return (0);
 }
