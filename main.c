@@ -1,5 +1,4 @@
 #include "shell.h"
-#include <signal.h>
 
 /**
  * sigint_handler - Handles Ctrl+C signal
@@ -8,17 +7,22 @@
 void sigint_handler(int sig)
 {
 	(void)sig;
-	write(STDOUT_FILENO, "\n", 1);
+	write(STDOUT_FILENO, "\n($) ", 5);
+	fflush(stdout);
 }
 
 /**
- * main - Entry point of the shell.
- * Return: 0 on success.
+ * main - Entry point of the shell
+ * @argc: Number of arguments
+ * @argv: Array of arguments
+ * Return: 0 on success
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	char *line;
 	int status = 1;
+
+	(void)argc;
 
 	/* Set up signal handling for Ctrl+C */
 	signal(SIGINT, sigint_handler);
@@ -39,7 +43,7 @@ int main(void)
 		}
 
 		/* Execute command */
-		status = execute_command(line);
+		status = execute_command(line, argv[0]);
 
 		/* Clean up */
 		free(line);

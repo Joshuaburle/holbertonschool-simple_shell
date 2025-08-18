@@ -5,7 +5,8 @@
  */
 void display_prompt(void)
 {
-	write(STDOUT_FILENO, "#cisfun$ ", 9);
+write(STDOUT_FILENO, "($) ", 4);
+fflush(stdout);
 }
 
 /**
@@ -14,22 +15,22 @@ void display_prompt(void)
  */
 char *read_line(void)
 {
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t read_size;
+char *line = NULL;
+size_t len = 0;
+ssize_t read_size;
 
-	read_size = getline(&line, &len, stdin);
-	if (read_size == -1)
-	{
-		free(line);
-		return (NULL);
-	}
+read_size = getline(&line, &len, stdin);
+if (read_size == -1)
+{
+free(line);
+return (NULL);
+}
 
-	/* Remove newline character */
-	if (read_size > 0 && line[read_size - 1] == '\n')
-		line[read_size - 1] = '\0';
+/* Remove newline character */
+if (read_size > 0 && line[read_size - 1] == '\n')
+line[read_size - 1] = '\0';
 
-	return (line);
+return (line);
 }
 
 /**
@@ -39,56 +40,15 @@ char *read_line(void)
  */
 int is_empty_or_whitespace(char *line)
 {
-	int i;
+int i;
 
-	if (line == NULL || strlen(line) == 0)
-		return (1);
+if (line == NULL || strlen(line) == 0)
+return (1);
 
-	for (i = 0; line[i] != '\0'; i++)
-	{
-		if (line[i] != ' ' && line[i] != '\t')
-			return (0);
-	}
-	return (1);
-}
-
-/**
- * execute_command - Executes a command
- * @command: The command to execute
- * Return: 1 to continue, 0 to exit
- */
-int execute_command(char *command)
+for (i = 0; line[i] != '\0'; i++)
 {
-	pid_t pid;
-	int status;
-	char *argv[2];
-
-	if (command == NULL || is_empty_or_whitespace(command))
-		return (1);
-
-	/* Fork process */
-	pid = fork();
-	if (pid == 0)
-	{
-		/* Child process */
-		argv[0] = command;
-		argv[1] = NULL;
-		if (execve(command, argv, environ) == -1)
-		{
-			fprintf(stderr, "./shell: No such file or directory\n");
-			exit(127);
-		}
-	}
-	else if (pid < 0)
-	{
-		/* Fork failed */
-		perror("Error");
-		return (1);
-	}
-	else
-	{
-		wait(&status);
-	}
-
-	return (1);
+if (line[i] != ' ' && line[i] != '\t')
+return (0);
+}
+return (1);
 }
