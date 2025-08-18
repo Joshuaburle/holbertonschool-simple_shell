@@ -158,9 +158,7 @@ int execute_command(char *command, char *program_name)
 	pid_t pid;
 	int status;
 	char **argv;
-	char **exec_argv;
 	char *full_path;
-	int i, argc;
 
 	/* Check for NULL or empty command */
 	if (command == NULL || is_empty_or_whitespace(command))
@@ -195,36 +193,16 @@ int execute_command(char *command, char *program_name)
 		return (1);
 	}
 
-	/* Count arguments */
-	for (argc = 0; argv[argc] != NULL; argc++)
-		;
-
-	/* Create a copy of argv for execve */
-	exec_argv = malloc((argc + 1) * sizeof(char *));
-	if (!exec_argv)
-	{
-		free(argv);
-		free(full_path);
-		return (1);
-	}
-
-	/* Copy arguments, replacing argv[0] with full_path */
-	exec_argv[0] = full_path;
-	for (i = 1; i < argc; i++)
-	{
-		exec_argv[i] = argv[i];
-	}
-	exec_argv[argc] = NULL;
-
 	/* Now we know the command exists, so we can fork */
 	pid = fork();
 	if (pid == 0)
 	{
 		/* Child process */
-		if (execve(full_path, exec_argv, environ) == -1)
+		/* Replace argv[0] with the full path */
+		argv[0] = full_path;
+		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
-			free(exec_argv);
 			free(argv);
 			free(full_path);
 			_exit(127);
@@ -234,7 +212,6 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Fork failed */
 		perror("Error");
-		free(exec_argv);
 		free(argv);
 		free(full_path);
 		return (1);
@@ -246,7 +223,6 @@ int execute_command(char *command, char *program_name)
 	}
 
 	/* Free allocated memory */
-	free(exec_argv);
 	free(argv);
 	free(full_path);
 	return (1);
