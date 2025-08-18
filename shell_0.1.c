@@ -53,7 +53,7 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				fprintf(stderr, "%s: No such file or directory\n", line);
+				fprintf(stderr, "./shell: No such file or directory\n");
 				exit(EXIT_FAILURE);
 			}
 		}
