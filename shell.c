@@ -33,6 +33,26 @@ char *read_line(void)
 }
 
 /**
+ * is_empty_or_whitespace - Checks if line is empty or only whitespace
+ * @line: The line to check
+ * Return: 1 if empty/whitespace, 0 otherwise
+ */
+int is_empty_or_whitespace(char *line)
+{
+	int i;
+
+	if (line == NULL || strlen(line) == 0)
+		return (1);
+
+	for (i = 0; line[i] != '\0'; i++)
+	{
+		if (line[i] != ' ' && line[i] != '\t')
+			return (0);
+	}
+	return (1);
+}
+
+/**
  * execute_command - Executes a command
  * @command: The command to execute
  * Return: 1 to continue, 0 to exit
@@ -43,12 +63,8 @@ int execute_command(char *command)
 	int status;
 	char *argv[2];
 
-	if (command == NULL || strlen(command) == 0)
+	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
-
-	/* Handle exit command */
-	if (strcmp(command, "exit") == 0)
-		return (0);
 
 	/* Fork process */
 	pid = fork();

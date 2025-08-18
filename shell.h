@@ -10,7 +10,9 @@
 /* Function prototypes */
 void display_prompt(void);
 char *read_line(void);
+int is_empty_or_whitespace(char *line);
 int execute_command(char *command);
+void sigint_handler(int sig);
 
 /* Global variables */
 extern char **environ;
