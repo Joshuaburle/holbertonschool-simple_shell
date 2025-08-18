@@ -20,7 +20,6 @@ int main(void)
 	pid_t pid;
 	int interactive = isatty(STDIN_FILENO);
 	char *argv[2];
-	int line_number = 1;
 
 	while (1)
 	{
@@ -39,10 +38,7 @@ int main(void)
 			line[nread - 1] = '\0';
 
 		if (strlen(line) == 0 || line[0] == ' ' || line[0] == '\t')
-		{
-			line_number++;
 			continue;
-		}
 
 		if (strcmp(line, "exit") == 0)
 		{
@@ -63,8 +59,7 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				fprintf(stderr, "./shell: line %d: %s: command not found\n",
-					line_number, line);
+				fprintf(stderr, "./shell: No such file or directory\n");
 				exit(127);
 			}
 		}
@@ -72,7 +67,6 @@ int main(void)
 		{
 			wait(NULL);
 		}
-		line_number++;
 	}
 
 	free(line);
