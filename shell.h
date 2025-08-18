@@ -17,6 +17,10 @@ int is_empty_or_whitespace(char *line);
 int execute_command(char *command, char *program_name);
 char **_split_line(char *line);
 char *find_command(char *command);
+char *get_path(void);
+int file_exists(char *filepath);
+char *exec_full_path(char *command, char *dir);
+char *find_path(char *command);
 void sigint_handler(int sig);
 
 /* Global variables */

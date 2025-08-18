@@ -1,73 +1,15 @@
 #include "shell.h"
 
 /**
- * find_command - Finds the full path of a command
- * @command: The command to find
- * Return: Full path if found, NULL otherwise
- */
-char *find_command(char *command)
-{
-	char *path_env, *path_copy, *dir;
-	char full_path[1024];
-
-	/* 1. Si la commande contient déjà un '/' */
-	if (strchr(command, '/'))
-	{
-		if (access(command, X_OK) == 0) /* exécutable */
-		{
-			return strdup(command);
-		}
-		else
-		{
-			return NULL;
-		}
-	}
-
-	/* 2. Récupérer le PATH */
-	path_env = getenv("PATH");
-	if (!path_env)
-	{
-		return NULL;
-	}
-
-	/* 3. Faire une copie modifiable */
-	path_copy = strdup(path_env);
-	if (!path_copy)
-	{
-		perror("strdup");
-		exit(EXIT_FAILURE);
-	}
-
-	/* 4. Parcourir chaque dossier du PATH */
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
-	{
-		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
-
-		if (access(full_path, X_OK) == 0)
-		{
-			free(path_copy);
-			return strdup(full_path);
-		}
-
-		dir = strtok(NULL, ":");
-	}
-
-	/* 5. Rien trouvé */
-	free(path_copy);
-	return NULL;
-}
-
-/**
  * _split_line - Splits a string into an array of tokens
  * @line: The string to split
  * Return: Array of tokens, or NULL on failure
  */
 char **_split_line(char *line)
 {
-	int bufsize = 64, position = 0;
+	int bufsize = 64, position = 0, i, j, start;
 	char **tokens = malloc(bufsize * sizeof(char *));
-	char *token;
+	char *line_copy;
 
 	if (!tokens)
 	{
@@ -75,10 +17,51 @@ char **_split_line(char *line)
 		exit(EXIT_FAILURE);
 	}
 
-	token = strtok(line, " \t\r\n");
-	while (token != NULL)
+	/* Make a copy to avoid modifying the original */
+	line_copy = strdup(line);
+	if (!line_copy)
 	{
-		tokens[position] = token;
+		free(tokens);
+		fprintf(stderr, "Allocation error\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Manual parsing to handle multiple delimiters properly */
+	i = 0;
+	while (line_copy[i])
+	{
+		/* Skip leading delimiters */
+		while (line_copy[i] && (line_copy[i] == ' ' || line_copy[i] == '\t' || 
+		       line_copy[i] == '\r' || line_copy[i] == '\n'))
+			i++;
+
+		if (line_copy[i] == '\0')
+			break;
+
+		/* Mark start of token */
+		start = i;
+
+		/* Find end of token */
+		while (line_copy[i] && line_copy[i] != ' ' && line_copy[i] != '\t' && 
+		       line_copy[i] != '\r' && line_copy[i] != '\n')
+			i++;
+
+		/* Null-terminate the token */
+		line_copy[i] = '\0';
+
+		/* Add token to array */
+		tokens[position] = strdup(&line_copy[start]);
+		if (!tokens[position])
+		{
+			/* Clean up on allocation failure */
+			for (j = 0; j < position; j++)
+				free(tokens[j]);
+			free(tokens);
+			free(line_copy);
+			fprintf(stderr, "Allocation error\n");
+			exit(EXIT_FAILURE);
+		}
+
 		position++;
 
 		if (position >= bufsize)
@@ -87,15 +70,22 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
+				/* Clean up on reallocation failure */
+				for (j = 0; j < position; j++)
+					free(tokens[j]);
+				free(tokens);
+				free(line_copy);
 				fprintf(stderr, "Allocation error\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 
-		token = strtok(NULL, " \t\r\n");
+		if (line_copy[i])
+			i++;
 	}
 
 	tokens[position] = NULL;
+	free(line_copy);
 	return (tokens);
 }
 
@@ -138,7 +128,7 @@ int execute_command(char *command, char *program_name)
 	}
 
 	/* Find the full path of the command BEFORE forking */
-	full_path = find_command(argv[0]);
+	full_path = find_path(argv[0]);
 	if (full_path == NULL)
 	{
 		/* Command not found - don't fork, just show error */
