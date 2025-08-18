@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
-#include <sys/stat.h>
 
 /**
  * main - Entry point of the simple shell program
@@ -41,20 +40,6 @@ int main(void)
 		if (strlen(line) == 0)
 			continue;
 
-		/* Check if command exists and is executable */
-		struct stat st;
-		if (stat(line, &st) == -1)
-		{
-			fprintf(stderr, "%s: No such file or directory\n", line);
-			continue;
-		}
-		
-		if (!(st.st_mode & S_IXUSR))
-		{
-			fprintf(stderr, "%s: Permission denied\n", line);
-			continue;
-		}
-
 		pid = fork();
 		if (pid == -1)
 		{
@@ -68,7 +53,7 @@ int main(void)
 			argv[1] = NULL;
 			if (execve(line, argv, environ) == -1)
 			{
-				perror(line);
+				fprintf(stderr, "%s: No such file or directory\n", line);
 				exit(EXIT_FAILURE);
 			}
 		}
