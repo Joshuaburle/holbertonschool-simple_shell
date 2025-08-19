@@ -5,8 +5,8 @@
  */
 void display_prompt(void)
 {
-write(STDOUT_FILENO, "#cisfun$ ", 9);
-fflush(stdout);
+	write(STDOUT_FILENO, "#cisfun$ ", 9);
+	fflush(stdout);
 }
 
 /**
@@ -15,22 +15,22 @@ fflush(stdout);
  */
 char *read_line(void)
 {
-char *line = NULL;
-size_t len = 0;
-ssize_t read_size;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read_size;
 
-read_size = getline(&line, &len, stdin);
-if (read_size == -1)
-{
-free(line);
-return (NULL);
-}
+	read_size = getline(&line, &len, stdin);
+	if (read_size == -1)
+	{
+		free(line);
+		return (NULL);
+	}
 
-/* Remove newline character */
-if (read_size > 0 && line[read_size - 1] == '\n')
-line[read_size - 1] = '\0';
+	/* Remove newline character */
+	if (read_size > 0 && line[read_size - 1] == '\n')
+		line[read_size - 1] = '\0';
 
-return (line);
+	return (line);
 }
 
 /**
@@ -40,15 +40,15 @@ return (line);
  */
 int is_empty_or_whitespace(char *line)
 {
-int i;
+	int i;
 
-if (line == NULL || strlen(line) == 0)
-return (1);
+	if (line == NULL || strlen(line) == 0)
+		return (1);
 
-for (i = 0; line[i] != '\0'; i++)
-{
-if (line[i] != ' ' && line[i] != '\t')
-return (0);
-}
-return (1);
+	for (i = 0; line[i] != '\0'; i++)
+	{
+		if (line[i] != ' ' && line[i] != '\t')
+			return (0);
+	}
+	return (1);
 }
