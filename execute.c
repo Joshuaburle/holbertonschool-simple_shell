@@ -122,7 +122,7 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
-	if (command == NULL)
+	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
 	/* Split command into arguments */
@@ -138,7 +138,7 @@ int execute_command(char *command, char *program_name)
 	if (strcmp(argv[0], "exit") == 0)
 	{
 		free(argv); /* Free tokens array */
-		return (0);
+		exit(0);
 	}
 
 	/* Find the full path of the command BEFORE forking */
@@ -146,7 +146,7 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
 		free(argv); /* Free tokens array */
 		return (1);
 	}
