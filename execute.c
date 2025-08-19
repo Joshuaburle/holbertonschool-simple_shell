@@ -120,7 +120,6 @@ int execute_command(char *command, char *program_name)
 	pid_t pid;
 	int status;
 	char **argv;
-	char *full_path;
 
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
@@ -141,26 +140,15 @@ int execute_command(char *command, char *program_name)
 		exit(0);
 	}
 
-	/* Find the full path of the command BEFORE forking */
-	full_path = find_command(argv[0]);
-	if (full_path == NULL)
-	{
-		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
-		free(argv); /* Free tokens array */
-		return (1);
-	}
-
-	/* Now we know the command exists, so we can fork */
+	/* For Simple shell 0.1 - no PATH handling, execute directly */
 	pid = fork();
 	if (pid == 0)
 	{
 		/* Child process */
-		if (execve(full_path, argv, environ) == -1)
+		if (execve(argv[0], argv, environ) == -1)
 		{
 			perror(program_name);
 			free(argv); /* Free tokens array */
-			free(full_path);
 			_exit(127);
 		}
 	}
@@ -169,7 +157,6 @@ int execute_command(char *command, char *program_name)
 		/* Fork failed */
 		perror("Error");
 		free(argv); /* Free tokens array */
-		free(full_path);
 		return (1);
 	}
 	else
@@ -180,6 +167,5 @@ int execute_command(char *command, char *program_name)
 
 	/* Free allocated memory */
 	free(argv); /* Free tokens array */
-	free(full_path);
 	return (1);
 }
