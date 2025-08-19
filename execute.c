@@ -1,6 +1,19 @@
 #include "shell.h"
 
 /**
+ * free_tokens - Frees memory allocated for tokens array
+ * @tokens: Array of tokens to free
+ */
+void free_tokens(char **tokens)
+{
+	if (tokens == NULL)
+		return;
+
+	/* Note: We don't free individual tokens because they point to parts of the original line */
+	free(tokens);
+}
+
+/**
  * find_command - Finds the full path of a command
  * @command: The command to find
  * Return: Full path if found, NULL otherwise
@@ -8,12 +21,12 @@
 char *find_command(char *command)
 {
 	char *path_env, *path_copy, *dir;
-	char *full_path;
+	char full_path[1024];
 
-	/* 1. If command already contains a '/' */
+	/* 1. Si la commande contient déjà un '/' */
 	if (strchr(command, '/'))
 	{
-		if (access(command, X_OK) == 0) /* executable */
+		if (access(command, X_OK) == 0) /* exécutable */
 		{
 			return (strdup(command));
 		}
@@ -23,47 +36,38 @@ char *find_command(char *command)
 		}
 	}
 
-	/* 2. Get PATH environment variable */
+	/* 2. Récupérer le PATH */
 	path_env = getenv("PATH");
 	if (!path_env || strlen(path_env) == 0)
 	{
-		/* Empty or NULL PATH - can't search in PATH directories */
+		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
 		return (NULL);
 	}
 
-	/* 3. Make a modifiable copy */
+	/* 3. Faire une copie modifiable */
 	path_copy = strdup(path_env);
 	if (!path_copy)
 	{
-		/* Return NULL instead of closing the shell */
+		/* Retourner NULL au lieu de fermer le shell */
 		return (NULL);
 	}
 
-	/* 4. Search through each PATH directory */
+	/* 4. Parcourir chaque dossier du PATH */
 	dir = strtok(path_copy, ":");
 	while (dir != NULL)
 	{
-		/* Dynamic allocation of exact size needed */
-		full_path = malloc(strlen(dir) + strlen(command) + 2);
-		if (!full_path)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-
-		snprintf(full_path, strlen(dir) + strlen(command) + 2, "%s/%s", dir, command);
+		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
 
 		if (access(full_path, X_OK) == 0)
 		{
 			free(path_copy);
-			return (full_path); /* Return full_path directly, no need for strdup */
+			return (strdup(full_path));
 		}
 
-		free(full_path); /* Free memory if command not found */
 		dir = strtok(NULL, ":");
 	}
 
-	/* 5. Nothing found */
+	/* 5. Rien trouvé */
 	free(path_copy);
 	return (NULL);
 }
@@ -81,7 +85,7 @@ char **_split_line(char *line)
 
 	if (!tokens)
 	{
-		/* Return NULL instead of closing the shell */
+		/* Retourner NULL au lieu de fermer le shell */
 		return (NULL);
 	}
 
@@ -97,7 +101,7 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				/* Return NULL instead of closing the shell */
+				/* Retourner NULL au lieu de fermer le shell */
 				return (NULL);
 			}
 		}
@@ -122,7 +126,7 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
-	if (command == NULL)
+	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
 	/* Split command into arguments */
@@ -133,7 +137,7 @@ int execute_command(char *command, char *program_name)
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		free(argv); /* Free tokens array */
+		free_tokens(argv);
 		return (0);
 	}
 
@@ -143,7 +147,7 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Command not found - don't fork, just show error */
 		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
-		free(argv); /* Free tokens array */
+		free_tokens(argv);
 		return (1);
 	}
 
@@ -156,7 +160,7 @@ int execute_command(char *command, char *program_name)
 		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
-			free(argv); /* Free tokens array */
+			free_tokens(argv);
 			free(full_path);
 			_exit(127);
 		}
@@ -165,7 +169,7 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Fork failed */
 		perror("Error");
-		free(argv); /* Free tokens array */
+		free_tokens(argv);
 		free(full_path);
 		return (1);
 	}
@@ -173,10 +177,17 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Parent process waits for child */
 		wait(&status);
+
+		/* Process exit status as required by Holberton */
+		if (WIFEXITED(status))
+		{
+			/* Child exited normally, status contains exit code */
+			/* You can store this in a global variable if needed */
+		}
 	}
 
 	/* Free allocated memory */
-	free(argv); /* Free tokens array */
+	free_tokens(argv);
 	free(full_path);
 	return (1);
 }
