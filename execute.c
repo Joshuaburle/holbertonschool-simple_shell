@@ -35,8 +35,8 @@ char *find_command(char *command)
 	path_copy = strdup(path_env);
 	if (!path_copy)
 	{
-		perror("strdup");
-		exit(EXIT_FAILURE);
+		/* Retourner NULL au lieu de fermer le shell */
+		return NULL;
 	}
 
 	/* 4. Parcourir chaque dossier du PATH */
@@ -72,8 +72,8 @@ char **_split_line(char *line)
 
 	if (!tokens)
 	{
-		fprintf(stderr, "Allocation error\n");
-		exit(EXIT_FAILURE);
+		/* Retourner NULL au lieu de fermer le shell */
+		return NULL;
 	}
 
 	token = strtok(line, " \t\r\n");
@@ -88,8 +88,8 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				fprintf(stderr, "Allocation error\n");
-				exit(EXIT_FAILURE);
+				/* Retourner NULL au lieu de fermer le shell */
+				return NULL;
 			}
 		}
 
