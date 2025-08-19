@@ -1,25 +1,52 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
 #include "shell.h"
 
 /**
- * main - Point d'entrée principal du shell
- * @argc: Nombre d'arguments
- * @argv: Tableau des arguments
- * @env: Variables d'environnement
- * Return: 0 en cas de succès, 1 en cas d'erreur
+ * sigint_handler - Handles Ctrl+C signal
+ * @sig: Signal number
  */
-int main(int argc, char *argv[], char *env[])
+void sigint_handler(int sig)
 {
-	(void)argc;
-	(void)argv;
+	(void)sig;
+	write(STDOUT_FILENO, "\n", 1);
+}
 
-	/* Démarrage du shell */
-	shell_loop(env);
+/**
+ * main - Entry point of the shell
+ * @argc: Number of arguments
+ * @argv: Array of arguments
+ * Return: 0 on success
+ */
+int main(int argc, char **argv)
+{
+	char *line;
+	int status = 1;
+
+	(void)argc;
+
+	/* Set up signal handling for Ctrl+C */
+	signal(SIGINT, sigint_handler);
+
+	while (status)
+	{
+		/* Display prompt in interactive mode */
+		if (isatty(STDIN_FILENO))
+			display_prompt();
+
+		/* Read command line */
+		line = read_line();
+		if (line == NULL)
+		{
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "\n", 1);
+			break;
+		}
+
+		/* Execute command */
+		status = execute_command(line, argv[0]);
+
+		/* Clean up */
+		free(line);
+	}
 
 	return (0);
 }

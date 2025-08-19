@@ -1,29 +1,25 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-/* Constantes */
-#define MAX_INPUT_SIZE 1024
-#define MAX_ARGS 64
-#define PROMPT "#cisfun$ "
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <stddef.h>
 
-/* Structures */
-typedef struct shell_info
-{
-	char *program_name;
-	char **env;
-	int exit_status;
-} shell_info_t;
+/* Function prototypes */
+void display_prompt(void);
+char *read_line(void);
+int is_empty_or_whitespace(char *line);
+int execute_command(char *command, char *program_name);
+char **_split_line(char *line);
+char *find_command(char *command);
+void sigint_handler(int sig);
 
-/* Prototypes des fonctions principales */
-void shell_loop(char **env);
-char *read_input(void);
-char **parse_input(char *input);
-int execute_command(char **args, char **env, char *program_name);
-void print_error(char *program_name);
+/* Global variables */
+extern char **environ;
 
-/* Fonctions utilitaires */
-void free_args(char **args);
-int is_builtin(char *command);
-void handle_builtin(char **args, shell_info_t *info);
-
-#endif /* SHELL_H */
+#endif
