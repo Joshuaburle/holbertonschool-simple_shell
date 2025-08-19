@@ -45,6 +45,16 @@ int main(int argc, char **argv)
 		/* Exécution de la commande */
 		status = execute_command(line, argv[0]);
 
+		/* Gestion des codes de retour */
+		if (status == 0)  /* exit sans argument */
+		{
+			break;  /* Quitte le shell */
+		}
+		else if (status > 0)  /* exit avec code de sortie */
+		{
+			break;  /* Quitte le shell avec le code */
+		}
+
 		/* Nettoyage */
 		free(line);
 	}

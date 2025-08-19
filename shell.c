@@ -34,7 +34,7 @@ char *read_line(void)
 }
 
 /**
- * is_empty_or_whitespace - Vérifie si la ligne est vide ou ne contient 
+ * is_empty_or_whitespace - Vérifie si la ligne est vide ou ne contient
  * que des espaces
  * @line: La ligne à vérifier
  * Return: 1 si vide/espaces, 0 sinon

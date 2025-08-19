@@ -25,8 +25,12 @@ int execute_command(char *command, char *program_name)
 	/* Gestion de la commande intégrée exit */
 	if (strcmp(argv[0], "exit") == 0)
 	{
+		int exit_code = 0;
+		if (argv[1] != NULL)
+			exit_code = atoi(argv[1]);  /* Récupère le code de sortie */
+
 		free_tokens(argv);
-		return (0); /* Quitte le shell */
+		return (exit_code);  /* Retourne le code de sortie */
 	}
 
 	/* Gestion de la commande intégrée env */
