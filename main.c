@@ -8,7 +8,7 @@ void sigint_handler(int sig)
 {
 	(void)sig;
 	write(STDOUT_FILENO, "\n", 1);
-	write(STDOUT_FILENO, "$ ", 2);
+	write(STDOUT_FILENO, "($) ", 4);
 }
 
 /**
@@ -46,14 +46,11 @@ int main(int argc, char **argv)
 		status = execute_command(line, argv[0]);
 
 		/* Gestion des codes de retour */
-		if (status == 0)  /* exit sans argument */
+		if (status == 0)  /* exit command */
 		{
 			break;  /* Quitte le shell */
 		}
-		else if (status > 0)  /* exit avec code de sortie */
-		{
-			break;  /* Quitte le shell avec le code */
-		}
+		/* Sinon continue (status == 1) */
 
 		/* Nettoyage */
 		free(line);

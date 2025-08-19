@@ -1,4 +1,5 @@
 #include "shell.h"
+#include <errno.h>
 
 /**
  * execute_command - Exécute une commande
@@ -13,6 +14,8 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
+	(void)program_name; /* Éviter l'avertissement de paramètre non utilisé */
+
 	/* Gestion des commandes vides ou avec seulement des espaces */
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
@@ -25,12 +28,8 @@ int execute_command(char *command, char *program_name)
 	/* Gestion de la commande intégrée exit */
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		int exit_code = 0;
-		if (argv[1] != NULL)
-			exit_code = atoi(argv[1]);  /* Récupère le code de sortie */
-
 		free_tokens(argv);
-		return (exit_code);  /* Retourne le code de sortie */
+		return (0);  /* Quitte le shell - PAS d'arguments */
 	}
 
 	/* Gestion de la commande intégrée env */
@@ -50,9 +49,18 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Commande non trouvée */
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		dprintf(STDERR_FILENO, "./hsh: 1: %s: not found\n", argv[0]);
 		free_tokens(argv);
-		return (1); /* Continue le shell */
+		return (127); /* Code spécifique pour commande non trouvée */
+	}
+
+	/* Vérifier si le fichier est exécutable */
+	if (access(full_path, X_OK) != 0)
+	{
+		dprintf(STDERR_FILENO, "./hsh: 1: %s: Permission denied\n", argv[0]);
+		free_tokens(argv);
+		free(full_path);
+		return (126); /* Code pour non exécutable */
 	}
 
 	/* Création et exécution du processus */
@@ -62,10 +70,11 @@ int execute_command(char *command, char *program_name)
 		/* Processus enfant */
 		if (execve(full_path, argv, environ) == -1)
 		{
-			perror(program_name);
+			/* Erreur système - code 2 */
+			dprintf(STDERR_FILENO, "./hsh: 1: %s: %s\n", argv[0], strerror(errno));
 			free_tokens(argv);
 			free(full_path);
-			_exit(127);
+			_exit(2); /* Code d'erreur système */
 		}
 	}
 	else if (pid < 0)
