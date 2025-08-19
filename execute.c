@@ -2,22 +2,7 @@
 
 
 
-/**
- * handle_builtin_env - Gère la commande intégrée env
- * @argv: Tableau d'arguments
- * Return: 1 pour continuer
- */
-int handle_builtin_env(char **argv)
-{
-	int i;
-	(void)argv; /* Éviter l'avertissement de paramètre non utilisé */
 
-	for (i = 0; environ[i] != NULL; i++)
-	{
-		printf("%s\n", environ[i]);
-	}
-	return (1); /* Continue le shell */
-}
 
 /**
  * execute_external_command - Exécute une commande externe
@@ -96,13 +81,7 @@ int execute_command(char *command, char *program_name, int line_num)
 		return (0);  /* Quitte le shell - PAS d'arguments */
 	}
 
-	/* Gestion de la commande intégrée env */
-	if (strcmp(argv[0], "env") == 0)
-	{
-		status = handle_builtin_env(argv);
-		free_tokens(argv);
-		return (status);
-	}
+
 
 	/* Recherche du chemin complet de la commande */
 	full_path = find_command(argv[0]);
