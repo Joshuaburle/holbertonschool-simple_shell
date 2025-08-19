@@ -18,7 +18,7 @@ void display_prompt(void);
 char *read_line(void);
 int is_empty_or_whitespace(char *line);
 char **_split_line(char *line);
-int execute_command(char *command, char *program_name);
+int execute_command(char *command, char *program_name, int line_num);
 char *find_command(char *command);
 int file_exists(char *filepath);
 void free_tokens(char **tokens);

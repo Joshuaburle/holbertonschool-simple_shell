@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 		}
 
 		/* Exécution de la commande */
-		status = execute_command(line, argv[0]);
+		status = execute_command(line, argv[0], 1);
 
 		/* Gestion des codes de retour */
 		if (status == 0)  /* exit command */

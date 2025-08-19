@@ -64,7 +64,7 @@ int execute_external_command(char **argv, char *full_path, char *program_name)
  * @program_name: Nom du programme shell (argv[0])
  * Return: 1 pour continuer, 0 pour quitter
  */
-int execute_command(char *command, char *program_name)
+int execute_command(char *command, char *program_name, int line_num)
 {
 	char **argv;
 	char *full_path;
@@ -99,7 +99,7 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Commande non trouvée - PAS de fork si la commande n'existe pas */
-		dprintf(STDERR_FILENO, "%s: 1: %s: not found\n", program_name, argv[0]);
+		dprintf(STDERR_FILENO, "%s: %d: %s: not found\n", program_name, line_num, argv[0]);
 		free_tokens(argv);
 		return (1); /* Continue le shell */
 	}
