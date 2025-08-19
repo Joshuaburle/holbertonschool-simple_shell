@@ -1,1 +1,40 @@
-# a venir a venir 
+SIMPLE_SHELL(1)                    User Commands                   SIMPLE_SHELL(1)
+
+NAME
+       simple_shell - A simple shell implementation
+
+SYNOPSIS
+       ./shell
+
+DESCRIPTION
+       simple_shell is a basic shell implementation that provides command
+       execution capabilities similar to bash or sh.
+
+       The shell supports:
+       - Basic command execution
+       - Built-in commands (exit, env)
+       - PATH environment variable handling
+       - Signal handling (Ctrl+C)
+       - Error handling and reporting
+
+BUILT-IN COMMANDS
+       exit    Exits the shell
+       env     Displays environment variables
+
+EXAMPLES
+       ./shell
+              Start the shell in interactive mode
+
+       echo "ls" | ./shell
+              Execute a single command and exit
+
+AUTHORS
+       Written by Joshua and Mohamed
+
+BUGS
+       Report bugs to the project repository
+
+SEE ALSO
+       bash(1), sh(1)
+
+SIMPLE_SHELL(1)                    August 2024                    SIMPLE_SHELL(1) 
