@@ -51,17 +51,10 @@ int execute_command(char *command, char *program_name)
 		/* Commande non trouvée */
 		dprintf(STDERR_FILENO, "./hsh: 1: %s: not found\n", argv[0]);
 		free_tokens(argv);
-		return (127); /* Code spécifique pour commande non trouvée */
+		return (1); /* Continue le shell */
 	}
 
-	/* Vérifier si le fichier est exécutable */
-	if (access(full_path, X_OK) != 0)
-	{
-		dprintf(STDERR_FILENO, "./hsh: 1: %s: Permission denied\n", argv[0]);
-		free_tokens(argv);
-		free(full_path);
-		return (126); /* Code pour non exécutable */
-	}
+
 
 	/* Création et exécution du processus */
 	pid = fork();
@@ -70,11 +63,11 @@ int execute_command(char *command, char *program_name)
 		/* Processus enfant */
 		if (execve(full_path, argv, environ) == -1)
 		{
-			/* Erreur système - code 2 */
-			dprintf(STDERR_FILENO, "./hsh: 1: %s: %s\n", argv[0], strerror(errno));
+			/* Erreur système - simple */
+			perror(program_name);
 			free_tokens(argv);
 			free(full_path);
-			_exit(2); /* Code d'erreur système */
+			_exit(127); /* Code simple pour erreur */
 		}
 	}
 	else if (pid < 0)
