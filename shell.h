@@ -10,7 +10,9 @@
 #include <stddef.h>
 
 /* Function prototypes */
-int shell_loop(char *program_name);
+void display_prompt(void);
+char *read_line(void);
+int is_empty_or_whitespace(char *line);
 int execute_command(char *command, char *program_name);
 char **_split_line(char *line);
 char *find_command(char *command);
