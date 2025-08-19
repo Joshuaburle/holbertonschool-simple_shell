@@ -125,7 +125,7 @@ int execute_command(char *command, char *program_name)
 	if (strcmp(argv[0], "exit") == 0)
 	{
 		free(argv);
-		return (0);
+		exit(0);
 	}
 
 	/* Find the full path of the command BEFORE forking */
