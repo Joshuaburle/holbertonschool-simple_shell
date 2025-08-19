@@ -38,9 +38,19 @@ int execute_external_command(char **argv, char *full_path, char *program_name)
 		/* Processus enfant */
 		if (execve(full_path, argv, environ) == -1)
 		{
-			/* Erreur système - simple */
-			perror(program_name);
-			_exit(127); /* Code simple pour erreur */
+			/* Erreur système - vérifier le type d'erreur */
+			if (access(full_path, X_OK) == -1)
+			{
+				/* Permission denied */
+				fprintf(stderr, "%s: Permission denied\n", program_name);
+				_exit(126);
+			}
+			else
+			{
+				/* Autre erreur */
+				perror(program_name);
+				_exit(127);
+			}
 		}
 	}
 	else if (pid < 0)
@@ -55,7 +65,7 @@ int execute_external_command(char **argv, char *full_path, char *program_name)
 		wait(&status);
 	}
 
-	return (1); /* Continue le shell */
+	return (WEXITSTATUS(status)); /* Retourne le statut de sortie */
 }
 
 /**
