@@ -1,6 +1,24 @@
 #include "shell.h"
 
 /**
+ * file_exists - Checks if a file exists and is executable
+ * @filepath: Path to the file
+ * Return: 1 if file exists and is executable, 0 otherwise
+ */
+int file_exists(char *filepath)
+{
+	struct stat st;
+
+	if (stat(filepath, &st) == 0)
+	{
+		if (S_ISREG(st.st_mode) && access(filepath, X_OK) == 0)
+			return (1);
+	}
+
+	return (0);
+}
+
+/**
  * free_tokens - Frees memory allocated for tokens array
  * @tokens: Array of tokens to free
  */
@@ -20,54 +38,64 @@ void free_tokens(char **tokens)
  */
 char *find_command(char *command)
 {
-	char *path_env, *path_copy, *dir;
-	char full_path[1024];
+	char *path_env, *path_copy, *dir, *full_path;
+	size_t needed_size;
+	int i;
 
 	/* 1. Si la commande contient déjà un '/' */
-	if (strchr(command, '/'))
+	if (strchr(command, '/') != NULL)
 	{
-		if (access(command, X_OK) == 0) /* exécutable */
-		{
+		if (file_exists(command))
 			return (strdup(command));
-		}
-		else
+		return (NULL);
+	}
+
+	/* 2. Récupérer le PATH depuis environ (plus robuste) */
+	path_env = NULL;
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		if (strncmp(environ[i], "PATH=", 5) == 0)
 		{
-			return (NULL);
+			path_env = environ[i] + 5;
+			break;
 		}
 	}
 
-	/* 2. Récupérer le PATH */
-	path_env = getenv("PATH");
 	if (!path_env || strlen(path_env) == 0)
-	{
-		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
 		return (NULL);
-	}
 
 	/* 3. Faire une copie modifiable */
 	path_copy = strdup(path_env);
 	if (!path_copy)
-	{
-		/* Retourner NULL au lieu de fermer le shell */
 		return (NULL);
-	}
 
 	/* 4. Parcourir chaque dossier du PATH */
 	dir = strtok(path_copy, ":");
 	while (dir != NULL)
 	{
-		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
-
-		if (access(full_path, X_OK) == 0)
+		/* 5. Construire le chemin complet avec taille dynamique */
+		needed_size = strlen(dir) + 1 + strlen(command) + 1;
+		full_path = malloc(needed_size);
+		if (!full_path)
 		{
-			free(path_copy);
-			return (strdup(full_path));
+			dir = strtok(NULL, ":");
+			continue;
 		}
 
+		snprintf(full_path, needed_size, "%s/%s", dir, command);
+
+		/* 6. Vérifier si le fichier existe et est exécutable */
+		if (file_exists(full_path))
+		{
+			free(path_copy);
+			return (full_path);
+		}
+
+		free(full_path);
 		dir = strtok(NULL, ":");
 	}
 
-	/* 5. Rien trouvé */
+	/* 7. Rien trouvé */
 	free(path_copy);
 	return (NULL);
 }
@@ -156,7 +184,6 @@ int execute_command(char *command, char *program_name)
 	if (pid == 0)
 	{
 		/* Child process */
-		argv[0] = full_path;
 		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
@@ -177,13 +204,6 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Parent process waits for child */
 		wait(&status);
-
-		/* Process exit status as required by Holberton */
-		if (WIFEXITED(status))
-		{
-			/* Child exited normally, status contains exit code */
-			/* You can store this in a global variable if needed */
-		}
 	}
 
 	/* Free allocated memory */
