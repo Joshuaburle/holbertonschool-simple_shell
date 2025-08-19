@@ -1,62 +1,50 @@
 #include "shell.h"
 
 /**
- * sigint_handler - Gère le signal Ctrl+C
- * @sig: Numéro du signal
+ * main - Point d'entrée principal du shell simple
+ * @argc: Nombre d'arguments de ligne de commande
+ * @argv: Tableau des arguments de ligne de commande
+ * Return: 0 en cas de succès, 1 en cas d'erreur
+ * 
+ * Cette fonction :
+ * 1. Configure la gestion des signaux (Ctrl+C)
+ * 2. Lance la boucle principale du shell
+ * 3. Gère les erreurs et la sortie propre du programme
  */
-void sigint_handler(int sig)
+int main(int argc, char *argv[])
 {
-	(void)sig;
-	write(STDOUT_FILENO, "\n", 1);
-	write(STDOUT_FILENO, "($) ", 4);
-}
+    char *line;
+    int status = 1;
+    static int line_count = 1;  /* Compteur de lignes pour les messages d'erreur */
 
-/**
- * main - Point d'entrée du shell
- * @argc: Nombre d'arguments
- * @argv: Tableau d'arguments
- * Return: 0 en cas de succès
- */
-int main(int argc, char **argv)
-{
-	char *line;
-	int status = 1;
-	static int line_count = 1;
+    (void)argc;  /* Paramètre non utilisé - évite le warning du compilateur */
 
-	(void)argc;
+    /* Configuration du gestionnaire de signal pour Ctrl+C */
+    signal(SIGINT, sigint_handler);
 
-	/* Configuration de la gestion du signal Ctrl+C */
-	signal(SIGINT, sigint_handler);
+    /* Boucle principale du shell */
+    while (status)
+    {
+        /* Affichage du prompt et lecture de la commande */
+        display_prompt();
+        line = read_line();
 
-	while (status)
-	{
-		/* Affichage du prompt en mode interactif */
-		if (isatty(STDIN_FILENO))
-			display_prompt();
+        /* Vérification de la fin de fichier (Ctrl+D) */
+        if (line == NULL)
+        {
+            printf("\n");  /* Nouvelle ligne pour un affichage propre */
+            break;
+        }
 
-		/* Lecture de la ligne de commande */
-		line = read_line();
-		if (line == NULL)
-		{
-			if (isatty(STDIN_FILENO))
-				write(STDOUT_FILENO, "\n", 1);
-			break;
-		}
+        /* Exécution de la commande avec le numéro de ligne actuel */
+        status = execute_command(line, argv[0], line_count);
+        
+        /* Libération de la mémoire de la ligne lue */
+        free(line);
+        
+        /* Incrémentation du compteur de lignes pour la prochaine commande */
+        line_count++;
+    }
 
-		/* Exécution de la commande */
-		status = execute_command(line, argv[0], line_count);
-
-		/* Gestion des codes de retour */
-		if (status == 0)  /* exit command */
-		{
-			break;  /* Quitte le shell */
-		}
-		/* Sinon continue (status == 1) */
-
-		/* Nettoyage */
-		free(line);
-		line_count++;
-	}
-
-	return (0);
+    return (0);
 }
