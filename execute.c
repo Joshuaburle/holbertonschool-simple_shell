@@ -133,7 +133,7 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
 		free(argv);
 		return (1);
 	}
