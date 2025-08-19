@@ -120,6 +120,7 @@ int execute_command(char *command, char *program_name)
 	pid_t pid;
 	int status;
 	char **argv;
+	char *cmd_path;
 
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
@@ -140,15 +141,25 @@ int execute_command(char *command, char *program_name)
 		exit(0);
 	}
 
-	/* For Simple shell 0.1 - no PATH handling, execute directly */
+	/* For Simple shell 0.3+ - Handle PATH, don't fork if command doesn't exist */
+	cmd_path = find_command(argv[0]);
+	if (cmd_path == NULL)
+	{
+		/* Command not found - print error and don't fork */
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		free(argv); /* Free tokens array */
+		return (1);
+	}
+
 	pid = fork();
 	if (pid == 0)
 	{
 		/* Child process */
-		if (execve(argv[0], argv, environ) == -1)
+		if (execve(cmd_path, argv, environ) == -1)
 		{
 			perror(program_name);
 			free(argv); /* Free tokens array */
+			free(cmd_path); /* Free command path */
 			_exit(127);
 		}
 	}
@@ -157,6 +168,7 @@ int execute_command(char *command, char *program_name)
 		/* Fork failed */
 		perror("Error");
 		free(argv); /* Free tokens array */
+		free(cmd_path); /* Free command path */
 		return (1);
 	}
 	else
@@ -167,5 +179,6 @@ int execute_command(char *command, char *program_name)
 
 	/* Free allocated memory */
 	free(argv); /* Free tokens array */
+	free(cmd_path); /* Free command path */
 	return (1);
 }
