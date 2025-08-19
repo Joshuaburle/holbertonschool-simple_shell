@@ -10,10 +10,10 @@ char *find_command(char *command)
 	char *path_env, *path_copy, *dir;
 	char *full_path;
 
-	/* 1. Si la commande contient déjà un '/' */
+	/* 1. If command already contains a '/' */
 	if (strchr(command, '/'))
 	{
-		if (access(command, X_OK) == 0) /* exécutable */
+		if (access(command, X_OK) == 0) /* executable */
 		{
 			return (strdup(command));
 		}
@@ -23,27 +23,27 @@ char *find_command(char *command)
 		}
 	}
 
-	/* 2. Récupérer le PATH */
+	/* 2. Get PATH environment variable */
 	path_env = getenv("PATH");
 	if (!path_env || strlen(path_env) == 0)
 	{
-		/* PATH vide ou NULL */
+		/* Empty or NULL PATH - can't search in PATH directories */
 		return (NULL);
 	}
 
-	/* 3. Faire une copie modifiable */
+	/* 3. Make a modifiable copy */
 	path_copy = strdup(path_env);
 	if (!path_copy)
 	{
-		/* Retourner NULL au lieu de fermer le shell */
+		/* Return NULL instead of closing the shell */
 		return (NULL);
 	}
 
-	/* 4. Parcourir chaque dossier du PATH */
+	/* 4. Search through each PATH directory */
 	dir = strtok(path_copy, ":");
 	while (dir != NULL)
 	{
-		/* Allocation dynamique de la taille exacte nécessaire */
+		/* Dynamic allocation of exact size needed */
 		full_path = malloc(strlen(dir) + strlen(command) + 2);
 		if (!full_path)
 		{
@@ -51,20 +51,19 @@ char *find_command(char *command)
 			return (NULL);
 		}
 
-		snprintf(full_path, strlen(dir) + strlen(command) + 2,
-			"%s/%s", dir, command);
+		snprintf(full_path, strlen(dir) + strlen(command) + 2, "%s/%s", dir, command);
 
 		if (access(full_path, X_OK) == 0)
 		{
 			free(path_copy);
-			return (full_path);
+			return (full_path); /* Return full_path directly, no need for strdup */
 		}
 
-		free(full_path);
+		free(full_path); /* Free memory if command not found */
 		dir = strtok(NULL, ":");
 	}
 
-	/* 5. Rien trouvé */
+	/* 5. Nothing found */
 	free(path_copy);
 	return (NULL);
 }
@@ -82,7 +81,7 @@ char **_split_line(char *line)
 
 	if (!tokens)
 	{
-		/* Retourner NULL au lieu de fermer le shell */
+		/* Return NULL instead of closing the shell */
 		return (NULL);
 	}
 
@@ -98,7 +97,7 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				/* Retourner NULL au lieu de fermer le shell */
+				/* Return NULL instead of closing the shell */
 				return (NULL);
 			}
 		}
@@ -123,7 +122,7 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
-	if (command == NULL || is_empty_or_whitespace(command))
+	if (command == NULL)
 		return (1);
 
 	/* Split command into arguments */
@@ -138,8 +137,8 @@ int execute_command(char *command, char *program_name)
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		free(argv);
-		exit(0);
+		free(argv); /* Free tokens array */
+		return (0);
 	}
 
 	/* Find the full path of the command BEFORE forking */
@@ -147,8 +146,8 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
-		free(argv);
+		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
+		free(argv); /* Free tokens array */
 		return (1);
 	}
 
@@ -160,7 +159,7 @@ int execute_command(char *command, char *program_name)
 		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
-			free(argv);
+			free(argv); /* Free tokens array */
 			free(full_path);
 			_exit(127);
 		}
@@ -169,7 +168,7 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Fork failed */
 		perror("Error");
-		free(argv);
+		free(argv); /* Free tokens array */
 		free(full_path);
 		return (1);
 	}
@@ -180,7 +179,7 @@ int execute_command(char *command, char *program_name)
 	}
 
 	/* Free allocated memory */
-	free(argv);
+	free(argv); /* Free tokens array */
 	free(full_path);
 	return (1);
 }
