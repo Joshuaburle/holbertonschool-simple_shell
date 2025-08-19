@@ -99,7 +99,7 @@ int execute_command(char *command, char *program_name, int line_num)
 	if (full_path == NULL)
 	{
 		/* Commande non trouvée - PAS de fork si la commande n'existe pas */
-		dprintf(STDERR_FILENO, "%s: line %d: %s: command not found\n", program_name, line_num, argv[0]);
+		fprintf(stderr, "%s: line %d: %s: command not found\n", program_name, line_num, argv[0]);
 		free_tokens(argv);
 		return (1); /* Continue le shell */
 	}
