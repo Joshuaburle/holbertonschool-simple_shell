@@ -128,8 +128,12 @@ int execute_command(char *command, char *program_name)
 
 	/* Split command into arguments */
 	argv = _split_line(command);
-	if (argv == NULL)
+	if (argv == NULL || argv[0] == NULL)
+	{
+		if (argv)
+			free(argv);
 		return (1);
+	}
 
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
@@ -153,7 +157,6 @@ int execute_command(char *command, char *program_name)
 	if (pid == 0)
 	{
 		/* Child process */
-		argv[0] = full_path;
 		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
