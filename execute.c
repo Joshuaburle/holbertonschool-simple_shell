@@ -8,7 +8,7 @@
 char *find_command(char *command)
 {
 	char *path_env, *path_copy, *dir;
-	char full_path[1024];
+	char *full_path;
 
 	/* 1. Si la commande contient déjà un '/' */
 	if (strchr(command, '/'))
@@ -43,14 +43,23 @@ char *find_command(char *command)
 	dir = strtok(path_copy, ":");
 	while (dir != NULL)
 	{
-		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
+		/* Allocation dynamique de la taille exacte nécessaire */
+		full_path = malloc(strlen(dir) + strlen(command) + 2);
+		if (!full_path)
+		{
+			free(path_copy);
+			return NULL;
+		}
+
+		snprintf(full_path, strlen(dir) + strlen(command) + 2, "%s/%s", dir, command);
 
 		if (access(full_path, X_OK) == 0)
 		{
 			free(path_copy);
-			return strdup(full_path);
+			return full_path; /* Retourner directement full_path, pas besoin de strdup */
 		}
 
+		free(full_path); /* Libérer la mémoire si la commande n'est pas trouvée */
 		dir = strtok(NULL, ":");
 	}
 
