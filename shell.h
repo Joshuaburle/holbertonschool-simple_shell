@@ -22,5 +22,6 @@ int execute_command(char *command, char *program_name);
 char *find_command(char *command);
 int file_exists(char *filepath);
 void free_tokens(char **tokens);
+char *get_path_env(void);
 
 #endif
