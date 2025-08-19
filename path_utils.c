@@ -1,9 +1,9 @@
 #include "shell.h"
 
 /**
- * file_exists - Checks if a file exists and is executable
- * @filepath: Path to the file
- * Return: 1 if file exists and is executable, 0 otherwise
+ * file_exists - Vérifie si un fichier existe et est exécutable
+ * @filepath: Chemin vers le fichier
+ * Return: 1 si le fichier existe et est exécutable, 0 sinon
  */
 int file_exists(char *filepath)
 {
@@ -18,8 +18,8 @@ int file_exists(char *filepath)
 }
 
 /**
- * get_path_env - Get PATH environment variable
- * Return: PATH string or NULL if not found
+ * get_path_env - Récupère la variable d'environnement PATH
+ * Return: Chaîne PATH ou NULL si non trouvée
  */
 char *get_path_env(void)
 {
@@ -34,25 +34,25 @@ char *get_path_env(void)
 }
 
 /**
- * find_command - Finds the full path of a command
- * @command: The command to find
- * Return: Full path if found, NULL otherwise
+ * find_command - Trouve le chemin complet d'une commande
+ * @command: La commande à trouver
+ * Return: Chemin complet si trouvé, NULL sinon
  */
 char *find_command(char *command)
 {
 	char *path_env, *path_copy, *dir, *full_path;
 	size_t needed_size;
 
-	/* Handle absolute paths */
+	/* Gestion des chemins absolus */
 	if (strchr(command, '/') != NULL)
 		return (file_exists(command) ? strdup(command) : NULL);
 
-	/* Get PATH environment */
+	/* Récupération de la variable d'environnement PATH */
 	path_env = get_path_env();
 	if (!path_env || strlen(path_env) == 0)
 		return (NULL);
 
-	/* Search in PATH directories */
+	/* Recherche dans les répertoires du PATH */
 	path_copy = strdup(path_env);
 	if (!path_copy)
 		return (NULL);

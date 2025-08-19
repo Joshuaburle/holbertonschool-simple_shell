@@ -9,10 +9,10 @@
 #include <sys/stat.h>
 #include <signal.h>
 
-/* Global variables */
+/* Variables globales */
 extern char **environ;
 
-/* Function prototypes */
+/* Prototypes de fonctions */
 void sigint_handler(int sig);
 void display_prompt(void);
 char *read_line(void);

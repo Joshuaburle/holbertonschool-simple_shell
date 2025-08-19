@@ -1,7 +1,7 @@
 #include "shell.h"
 
 /**
- * display_prompt - Displays the shell prompt
+ * display_prompt - Affiche le prompt du shell
  */
 void display_prompt(void)
 {
@@ -10,8 +10,8 @@ void display_prompt(void)
 }
 
 /**
- * read_line - Reads a line from stdin
- * Return: Pointer to the line, or NULL on EOF
+ * read_line - Lit une ligne depuis l'entrée standard
+ * Return: Pointeur vers la ligne, ou NULL en cas de fin de fichier
  */
 char *read_line(void)
 {
@@ -26,7 +26,7 @@ char *read_line(void)
 		return (NULL);
 	}
 
-	/* Remove newline character */
+	/* Suppression du caractère de nouvelle ligne */
 	if (read_size > 0 && line[read_size - 1] == '\n')
 		line[read_size - 1] = '\0';
 
@@ -34,9 +34,9 @@ char *read_line(void)
 }
 
 /**
- * is_empty_or_whitespace - Checks if line is empty or only whitespace
- * @line: The line to check
- * Return: 1 if empty/whitespace, 0 otherwise
+ * is_empty_or_whitespace - Vérifie si la ligne est vide ou ne contient que des espaces
+ * @line: La ligne à vérifier
+ * Return: 1 si vide/espaces, 0 sinon
  */
 int is_empty_or_whitespace(char *line)
 {

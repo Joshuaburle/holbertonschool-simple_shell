@@ -1,9 +1,9 @@
 #include "shell.h"
 
 /**
- * _split_line - Splits a string into an array of tokens
- * @line: The string to split
- * Return: Array of tokens, or NULL on failure
+ * _split_line - Divise une chaîne en un tableau de tokens
+ * @line: La chaîne à diviser
+ * Return: Tableau de tokens, ou NULL en cas d'échec
  */
 char **_split_line(char *line)
 {
@@ -15,7 +15,7 @@ char **_split_line(char *line)
 	if (!tokens)
 		return (NULL);
 
-	/* Make a copy to avoid modifying original line */
+	/* Création d'une copie pour éviter de modifier la ligne originale */
 	line_copy = strdup(line);
 	if (!line_copy)
 	{
@@ -23,7 +23,7 @@ char **_split_line(char *line)
 		return (NULL);
 	}
 
-	/* Remove quotes and handle spaces properly */
+	/* Suppression des guillemets et gestion des espaces */
 	for (i = 0, j = 0; line_copy[i] != '\0'; i++)
 	{
 		if (line_copy[i] == '"' && !in_single_quotes)
@@ -36,7 +36,7 @@ char **_split_line(char *line)
 			in_single_quotes = !in_single_quotes;
 			continue;
 		}
-		if (!in_quotes && !in_single_quotes && 
+		if (!in_quotes && !in_single_quotes &&
 			(line_copy[i] == ' ' || line_copy[i] == '\t'))
 		{
 			line_copy[j++] = ' ';
@@ -48,17 +48,17 @@ char **_split_line(char *line)
 	}
 	line_copy[j] = '\0';
 
-	/* Split the cleaned line */
+	/* Division de la ligne nettoyée */
 	token = strtok(line_copy, " \t\r\n");
 	while (token != NULL)
 	{
-		/* Skip empty tokens */
+		/* Ignorer les tokens vides */
 		if (strlen(token) > 0)
 		{
 			tokens[position] = strdup(token);
 			if (!tokens[position])
 			{
-				/* Cleanup on error */
+				/* Nettoyage en cas d'erreur */
 				for (i = 0; i < position; i++)
 					free(tokens[i]);
 				free(tokens);
@@ -74,7 +74,7 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				/* Cleanup on error */
+				/* Nettoyage en cas d'erreur */
 				for (i = 0; i < position; i++)
 					free(tokens[i]);
 				free(line_copy);
@@ -91,8 +91,8 @@ char **_split_line(char *line)
 }
 
 /**
- * free_tokens - Frees memory allocated for tokens array
- * @tokens: Array of tokens to free
+ * free_tokens - Libère la mémoire allouée pour le tableau de tokens
+ * @tokens: Tableau de tokens à libérer
  */
 void free_tokens(char **tokens)
 {

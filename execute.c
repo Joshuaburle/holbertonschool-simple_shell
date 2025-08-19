@@ -1,10 +1,10 @@
 #include "shell.h"
 
 /**
- * execute_command - Executes a command
- * @command: The command to execute
- * @program_name: Name of the shell program (argv[0])
- * Return: 1 to continue, 0 to exit
+ * execute_command - Exécute une commande
+ * @command: La commande à exécuter
+ * @program_name: Nom du programme shell (argv[0])
+ * Return: 1 pour continuer, 0 pour quitter
  */
 int execute_command(char *command, char *program_name)
 {
@@ -13,22 +13,23 @@ int execute_command(char *command, char *program_name)
 	char **argv;
 	char *full_path;
 
+	/* Gestion des commandes vides ou avec seulement des espaces */
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
-	/* Split command into arguments */
+	/* Division de la commande en arguments */
 	argv = _split_line(command);
 	if (argv == NULL || argv[0] == NULL)
 		return (1);
 
-	/* Check if it's an exit command */
+	/* Gestion de la commande intégrée exit */
 	if (strcmp(argv[0], "exit") == 0)
 	{
 		free_tokens(argv);
-		return (0);
+		return (0); /* Quitte le shell */
 	}
 
-	/* Check if it's an env command */
+	/* Gestion de la commande intégrée env */
 	if (strcmp(argv[0], "env") == 0)
 	{
 		int i;
@@ -37,24 +38,24 @@ int execute_command(char *command, char *program_name)
 			printf("%s\n", environ[i]);
 		}
 		free_tokens(argv);
-		return (1);
+		return (1); /* Continue le shell */
 	}
 
-	/* Find the full path of the command BEFORE forking */
+	/* Recherche du chemin complet de la commande */
 	full_path = find_command(argv[0]);
 	if (full_path == NULL)
 	{
-		/* Command not found - don't fork, just show error */
+		/* Commande non trouvée */
 		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
 		free_tokens(argv);
-		return (1);
+		return (1); /* Continue le shell */
 	}
 
-	/* Now we know the command exists, so we can fork */
+	/* Création et exécution du processus */
 	pid = fork();
 	if (pid == 0)
 	{
-		/* Child process */
+		/* Processus enfant */
 		if (execve(full_path, argv, environ) == -1)
 		{
 			perror(program_name);
@@ -65,20 +66,20 @@ int execute_command(char *command, char *program_name)
 	}
 	else if (pid < 0)
 	{
-		/* Fork failed */
+		/* Échec du fork */
 		perror("Error");
 		free_tokens(argv);
 		free(full_path);
-		return (1);
+		return (1); /* Comme d'haab continue le shell */
 	}
 	else
 	{
-		/* Parent process waits for child */
+		/* Le processus parent attend l'enfant */
 		wait(&status);
 	}
 
-	/* Free allocated memory */
+	/* Nettoyage et continuation */
 	free_tokens(argv);
 	free(full_path);
-	return (1);
+	return (1); /* Continue le shell */
 }
