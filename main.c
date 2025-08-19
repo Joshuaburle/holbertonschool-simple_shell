@@ -21,6 +21,7 @@ int main(int argc, char **argv)
 {
 	char *line;
 	int status = 1;
+	static int line_count = 1;
 
 	(void)argc;
 
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 		}
 
 		/* Exécution de la commande */
-		status = execute_command(line, argv[0]);
+		status = execute_command(line, argv[0], line_count);
 
 		/* Gestion des codes de retour */
 		if (status == 0)  /* exit command */
@@ -54,6 +55,7 @@ int main(int argc, char **argv)
 
 		/* Nettoyage */
 		free(line);
+		line_count++;
 	}
 
 	return (0);
