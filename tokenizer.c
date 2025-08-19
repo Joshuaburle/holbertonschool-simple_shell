@@ -1,29 +1,14 @@
 #include "shell.h"
 
 /**
- * _split_line - Divise une chaîne en un tableau de tokens
- * @line: La chaîne à diviser
- * Return: Tableau de tokens, ou NULL en cas d'échec
+ * handle_quotes - Gère les guillemets dans une ligne
+ * @line_copy: Copie de la ligne à traiter
+ * Return: Ligne nettoyée des guillemets
  */
-char **_split_line(char *line)
+char *handle_quotes(char *line_copy)
 {
-	int bufsize = 64, position = 0;
-	char **tokens = malloc(bufsize * sizeof(char *));
-	char *token, *line_copy;
 	int i, j, in_quotes = 0, in_single_quotes = 0;
 
-	if (!tokens)
-		return (NULL);
-
-	/* Création d'une copie pour éviter de modifier la ligne originale */
-	line_copy = strdup(line);
-	if (!line_copy)
-	{
-		free(tokens);
-		return (NULL);
-	}
-
-	/* Suppression des guillemets et gestion des espaces */
 	for (i = 0, j = 0; line_copy[i] != '\0'; i++)
 	{
 		if (line_copy[i] == '"' && !in_single_quotes)
@@ -48,45 +33,91 @@ char **_split_line(char *line)
 	}
 	line_copy[j] = '\0';
 
-	/* Division de la ligne nettoyée */
+	return (line_copy);
+}
+
+/**
+ * add_token - Ajoute un token au tableau
+ * @tokens: Tableau de tokens
+ * @token: Token à ajouter
+ * @position: Position actuelle
+ * @bufsize: Taille actuelle du buffer
+ * @line_copy: Copie de la ligne
+ * Return: Nouvelle taille du buffer, ou -1 en cas d'échec
+ */
+int add_token(char **tokens, char *token, int position, int bufsize,
+	char *line_copy)
+{
+	if (strlen(token) > 0)
+	{
+		tokens[position] = strdup(token);
+		if (!tokens[position])
+		{
+			int i;
+
+			for (i = 0; i < position; i++)
+				free(tokens[i]);
+			free(tokens);
+			free(line_copy);
+			return (-1);
+		}
+		position++;
+	}
+
+	if (position >= bufsize)
+	{
+		bufsize += 64;
+		tokens = realloc(tokens, bufsize * sizeof(char *));
+		if (!tokens)
+		{
+			int i;
+
+			for (i = 0; i < position; i++)
+				free(tokens[i]);
+			free(line_copy);
+			return (-1);
+		}
+	}
+
+	return (bufsize);
+}
+
+/**
+ * _split_line - Divise une chaîne en tableau de tokens
+ * @line: La chaîne à diviser
+ * Return: Tableau de tokens, ou NULL en cas d'échec
+ */
+char **_split_line(char *line)
+{
+	int bufsize = 64, position = 0;
+	char **tokens = malloc(bufsize * sizeof(char *));
+	char *token, *line_copy;
+
+	if (!tokens)
+		return (NULL);
+
+	line_copy = strdup(line);
+	if (!line_copy)
+	{
+		free(tokens);
+		return (NULL);
+	}
+
+	line_copy = handle_quotes(line_copy);
+
 	token = strtok(line_copy, " \t\r\n");
 	while (token != NULL)
 	{
-		/* Ignorer les tokens vides */
-		if (strlen(token) > 0)
-		{
-			tokens[position] = strdup(token);
-			if (!tokens[position])
-			{
-				/* Nettoyage en cas d'erreur */
-				for (i = 0; i < position; i++)
-					free(tokens[i]);
-				free(tokens);
-				free(line_copy);
-				return (NULL);
-			}
-			position++;
-		}
-
-		if (position >= bufsize)
-		{
-			bufsize += 64;
-			tokens = realloc(tokens, bufsize * sizeof(char *));
-			if (!tokens)
-			{
-				/* Nettoyage en cas d'erreur */
-				for (i = 0; i < position; i++)
-					free(tokens[i]);
-				free(line_copy);
-				return (NULL);
-			}
-		}
-
+		bufsize = add_token(tokens, token, position, bufsize, line_copy);
+		if (bufsize == -1)
+			return (NULL);
+		position++;
 		token = strtok(NULL, " \t\r\n");
 	}
 
 	tokens[position] = NULL;
 	free(line_copy);
+
 	return (tokens);
 }
 

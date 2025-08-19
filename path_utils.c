@@ -23,14 +23,7 @@ int file_exists(char *filepath)
  */
 char *get_path_env(void)
 {
-	int i;
-
-	for (i = 0; environ[i] != NULL; i++)
-	{
-		if (strncmp(environ[i], "PATH=", 5) == 0)
-			return (environ[i] + 5);
-	}
-	return (NULL);
+	return (getenv("PATH"));
 }
 
 /**
@@ -43,16 +36,16 @@ char *find_command(char *command)
 	char *path_env, *path_copy, *dir, *full_path;
 	size_t needed_size;
 
-	/* Gestion des chemins absolus */
+	/* Handle absolute paths */
 	if (strchr(command, '/') != NULL)
 		return (file_exists(command) ? strdup(command) : NULL);
 
-	/* Récupération de la variable d'environnement PATH */
+	/* Get PATH environment */
 	path_env = get_path_env();
-	if (!path_env || strlen(path_env) == 0)
+	if (!path_env)
 		return (NULL);
 
-	/* Recherche dans les répertoires du PATH */
+	/* Search in PATH directories */
 	path_copy = strdup(path_env);
 	if (!path_copy)
 		return (NULL);

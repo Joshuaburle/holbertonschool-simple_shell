@@ -1,21 +1,20 @@
 #include "shell.h"
 
 /**
- * sigint_handler - Gère le signal Ctrl+C
- * @sig: Numéro du signal
+ * sigint_handler - Handles Ctrl+C signal
+ * @sig: Signal number
  */
 void sigint_handler(int sig)
 {
 	(void)sig;
 	write(STDOUT_FILENO, "\n", 1);
-	write(STDOUT_FILENO, "($) ", 4);
 }
 
 /**
- * main - Point d'entrée du shell
- * @argc: Nombre d'arguments
- * @argv: Tableau d'arguments
- * Return: 0 en cas de succès
+ * main - Entry point of the shell
+ * @argc: Number of arguments
+ * @argv: Array of arguments
+ * Return: 0 on success
  */
 int main(int argc, char **argv)
 {
@@ -24,16 +23,16 @@ int main(int argc, char **argv)
 
 	(void)argc;
 
-	/* Configuration de la gestion du signal Ctrl+C */
+	/* Set up signal handling for Ctrl+C */
 	signal(SIGINT, sigint_handler);
 
 	while (status)
 	{
-		/* Affichage du prompt en mode interactif */
+		/* Display prompt in interactive mode */
 		if (isatty(STDIN_FILENO))
 			display_prompt();
 
-		/* Lecture de la ligne de commande */
+		/* Read command line */
 		line = read_line();
 		if (line == NULL)
 		{
@@ -42,17 +41,10 @@ int main(int argc, char **argv)
 			break;
 		}
 
-		/* Exécution de la commande */
-		status = execute_command(line, argv[0], 1);
+		/* Execute command */
+		status = execute_command(line, argv[0]);
 
-		/* Gestion des codes de retour */
-		if (status == 0)  /* exit command */
-		{
-			break;  /* Quitte le shell */
-		}
-		/* Sinon continue (status == 1) */
-
-		/* Nettoyage */
+		/* Clean up */
 		free(line);
 	}
 
