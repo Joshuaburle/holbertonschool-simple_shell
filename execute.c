@@ -113,7 +113,7 @@ char **_split_line(char *line)
 
 	if (!tokens)
 	{
-		/* Retourner NULL au lieu de fermer le shell */
+		/* Return NULL instead of closing the shell */
 		return (NULL);
 	}
 
@@ -129,7 +129,7 @@ char **_split_line(char *line)
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
 			{
-				/* Retourner NULL au lieu de fermer le shell */
+				/* Return NULL instead of closing the shell */
 				return (NULL);
 			}
 		}
@@ -152,43 +152,46 @@ int execute_command(char *command, char *program_name)
 	pid_t pid;
 	int status;
 	char **argv;
-	char *full_path;
+	char *cmd_path;
 
 	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
 	/* Split command into arguments */
 	argv = _split_line(command);
-	if (argv == NULL)
+	if (argv == NULL || argv[0] == NULL)
+	{
+		if (argv)
+			free(argv);
 		return (1);
+	}
 
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		free_tokens(argv);
-		return (0);
+		free(argv); /* Free tokens array */
+		exit(0);
 	}
 
-	/* Find the full path of the command BEFORE forking */
-	full_path = find_command(argv[0]);
-	if (full_path == NULL)
+	/* For Simple shell 0.3+ - Handle PATH, don't fork if command doesn't exist */
+	cmd_path = find_command(argv[0]);
+	if (cmd_path == NULL)
 	{
-		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
-		free_tokens(argv);
+		/* Command not found - print error and don't fork */
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		free(argv); /* Free tokens array */
 		return (1);
 	}
 
-	/* Now we know the command exists, so we can fork */
 	pid = fork();
 	if (pid == 0)
 	{
 		/* Child process */
-		if (execve(full_path, argv, environ) == -1)
+		if (execve(cmd_path, argv, environ) == -1)
 		{
 			perror(program_name);
-			free_tokens(argv);
-			free(full_path);
+			free(argv); /* Free tokens array */
+			free(cmd_path); /* Free command path */
 			_exit(127);
 		}
 	}
@@ -196,8 +199,8 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Fork failed */
 		perror("Error");
-		free_tokens(argv);
-		free(full_path);
+		free(argv); /* Free tokens array */
+		free(cmd_path); /* Free command path */
 		return (1);
 	}
 	else
@@ -207,7 +210,7 @@ int execute_command(char *command, char *program_name)
 	}
 
 	/* Free allocated memory */
-	free_tokens(argv);
-	free(full_path);
+	free(argv); /* Free tokens array */
+	free(cmd_path); /* Free command path */
 	return (1);
 }
