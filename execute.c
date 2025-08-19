@@ -65,7 +65,7 @@ char *find_command(char *command)
 		}
 
 		dir = strtok(NULL, ":");
-	}
+	
 
 	/* 5. Rien trouvé */
 	free(path_copy);
