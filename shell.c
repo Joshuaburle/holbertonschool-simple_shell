@@ -1,102 +1,174 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #include "shell.h"
 
 /**
- * sigint_handler - Gère le signal Ctrl+C (SIGINT)
- * @sig: Numéro du signal reçu (non utilisé mais requis par la signature)
- * 
- * Cette fonction est appelée quand l'utilisateur appuie sur Ctrl+C.
- * Elle affiche un nouveau prompt sur une nouvelle ligne, permettant
- * à l'utilisateur de continuer à utiliser le shell.
- * 
- * Comportement : 
- * - Affiche une nouvelle ligne
- * - Affiche le prompt "$ "
- * - Permet à l'utilisateur de saisir une nouvelle commande
+ * shell_loop - Boucle principale du shell
+ * @env: Variables d'environnement
  */
-void sigint_handler(int sig)
+void shell_loop(char **env)
 {
-    (void)sig;  /* Variable non utilisée - évite le warning du compilateur */
-    
-    printf("\n");        /* Nouvelle ligne pour un affichage propre */
-    display_prompt();    /* Affichage du prompt pour la prochaine commande */
+	char *input;
+	char **args;
+	shell_info_t info;
+	int status = 1;
+
+	info.env = env;
+	info.exit_status = 0;
+
+	while (status)
+	{
+		/* Affichage du prompt */
+		if (isatty(STDIN_FILENO))
+			printf("%s", PROMPT);
+
+		/* Lecture de l'entrée utilisateur */
+		input = read_input();
+		if (input == NULL)
+		{
+			if (isatty(STDIN_FILENO))
+				printf("\n");
+			break;
+		}
+
+		/* Parsing de l'entrée */
+		args = parse_input(input);
+		if (args != NULL && args[0] != NULL)
+		{
+			/* Exécution de la commande */
+			status = execute_command(args, env, "./shell");
+		}
+
+		/* Libération de la mémoire */
+		free(input);
+		free_args(args);
+	}
 }
 
 /**
- * display_prompt - Affiche le prompt du shell
- * 
- * Cette fonction affiche le symbole "$ " qui indique que le shell
- * attend une commande de l'utilisateur.
- * 
- * Le prompt est affiché :
- * - Au démarrage du shell
- * - Après l'exécution de chaque commande
- * - Après l'interruption par Ctrl+C
+ * read_input - Lit l'entrée utilisateur
+ * Return: Pointeur vers la chaîne lue ou NULL en cas d'erreur
  */
-void display_prompt(void)
+char *read_input(void)
 {
-    printf("$ ");        /* Affichage du prompt standard */
-    fflush(stdout);      /* Force l'affichage immédiat du prompt */
+	char *input = NULL;
+	size_t len = 0;
+	ssize_t read_chars;
+
+	read_chars = getline(&input, &len, stdin);
+	if (read_chars == -1)
+	{
+		free(input);
+		return (NULL);
+	}
+
+	/* Suppression du caractère de nouvelle ligne */
+	if (input[read_chars - 1] == '\n')
+		input[read_chars - 1] = '\0';
+
+	return (input);
 }
 
 /**
- * read_line - Lit une ligne de commande depuis l'entrée standard
- * Return: Pointeur vers la ligne lue, ou NULL en cas d'erreur ou fin de fichier
- * 
- * Cette fonction utilise getline() pour lire une ligne complète depuis stdin.
- * Elle gère automatiquement l'allocation de mémoire et retourne :
- * - La ligne lue (avec le '\n' final)
- * - NULL en cas d'erreur ou de fin de fichier (Ctrl+D)
- * 
- * Important : La mémoire allouée par getline() doit être libérée par l'appelant
- * avec free() après utilisation.
+ * parse_input - Parse l'entrée utilisateur en arguments
+ * @input: Chaîne d'entrée
+ * Return: Tableau d'arguments ou NULL en cas d'erreur
  */
-char *read_line(void)
+char **parse_input(char *input)
 {
-    char *line = NULL;   /* Pointeur vers la ligne lue */
-    size_t len = 0;      /* Longueur de la ligne (initialisée par getline) */
-    ssize_t read;        /* Nombre de caractères lus */
+	char **args = malloc(MAX_ARGS * sizeof(char *));
+	char *token;
+	int i = 0;
 
-    /* Lecture de la ligne avec getline */
-    read = getline(&line, &len, stdin);
-    
-    /* Vérification du résultat de la lecture */
-    if (read == -1)
-    {
-        /* Fin de fichier (Ctrl+D) ou erreur de lecture */
-        free(line);      /* Libération de la mémoire allouée */
-        return (NULL);
-    }
+	if (args == NULL)
+		return (NULL);
 
-    return (line);       /* Retour de la ligne lue */
+	token = strtok(input, " \t");
+	while (token != NULL && i < MAX_ARGS - 1)
+	{
+		args[i] = strdup(token);
+		if (args[i] == NULL)
+		{
+			free_args(args);
+			return (NULL);
+		}
+		i++;
+		token = strtok(NULL, " \t");
+	}
+	args[i] = NULL;
+
+	return (args);
 }
 
 /**
- * is_empty_or_whitespace - Vérifie si une ligne est vide ou ne contient que des espaces
- * @line: La ligne à vérifier
- * Return: 1 si la ligne est vide ou ne contient que des espaces, 0 sinon
- * 
- * Cette fonction vérifie si une ligne de commande est "vide" :
- * - Ligne NULL ou chaîne vide ""
- * - Ligne ne contenant que des espaces, tabulations ou retours à la ligne
- * 
- * Utilité : Évite d'exécuter des commandes vides qui pourraient causer des erreurs
- * ou des comportements inattendus.
+ * execute_command - Exécute une commande
+ * @args: Tableau d'arguments
+ * @env: Variables d'environnement
+ * @program_name: Nomme du programme
+ * Return: Statut de sortie
  */
-int is_empty_or_whitespace(char *line)
+int execute_command(char **args, char **env, char *program_name)
 {
-    int i;
+	pid_t pid;
+	int status;
 
-    /* Vérification des cas évidents */
-    if (line == NULL)
-        return (1);  /* Ligne NULL = vide */
+	if (args == NULL || args[0] == NULL)
+		return (0);
 
-    /* Parcours de la ligne pour vérifier chaque caractère */
-    for (i = 0; line[i] != '\0'; i++)
-    {
-        /* Si on trouve un caractère qui n'est pas un espace, tabulation ou retour à la ligne */
-        if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n')
-            return (0);  /* Ligne non vide */
-    }
+	/* Pas de built-ins selon les exigences de la tâche */
 
-    return (1);  /* Ligne vide ou ne contenant que des espaces */
+	/* Création d'un nouveau processus */
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("fork");
+		return (1);
+	}
+
+	if (pid == 0)
+	{
+		/* Processus enfant */
+		if (execve(args[0], args, env) == -1)
+		{
+			print_error(program_name);
+			exit(1);
+		}
+	}
+	else
+	{
+		/* Processus parent */
+		waitpid(pid, &status, 0);
+	}
+
+	return (WEXITSTATUS(status));
+}
+
+/**
+ * print_error - Affiche un message d'erreur
+ * @program_name: Nom du programme
+ * @command: Commande qui a échoué
+ */
+void print_error(char *program_name)
+{
+	fprintf(stderr, "%s: No such file or directory\n", program_name);
+}
+
+/**
+ * free_args - Libère la mémoire allouée pour les arguments
+ * @args: Tableau d'arguments à libérer
+ */
+void free_args(char **args)
+{
+	int i;
+
+	if (args == NULL)
+		return;
+
+	for (i = 0; args[i] != NULL; i++)
+		free(args[i]);
+	free(args);
 }
