@@ -15,11 +15,11 @@ char *find_command(char *command)
 	{
 		if (access(command, X_OK) == 0) /* exécutable */
 		{
-			return strdup(command);
+			return (strdup(command));
 		}
 		else
 		{
-			return NULL;
+			return (NULL);
 		}
 	}
 
@@ -27,8 +27,8 @@ char *find_command(char *command)
 	path_env = getenv("PATH");
 	if (!path_env || strlen(path_env) == 0)
 	{
-		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
-		return NULL;
+		/* PATH vide ou NULL */
+		return (NULL);
 	}
 
 	/* 3. Faire une copie modifiable */
@@ -36,7 +36,7 @@ char *find_command(char *command)
 	if (!path_copy)
 	{
 		/* Retourner NULL au lieu de fermer le shell */
-		return NULL;
+		return (NULL);
 	}
 
 	/* 4. Parcourir chaque dossier du PATH */
@@ -48,24 +48,25 @@ char *find_command(char *command)
 		if (!full_path)
 		{
 			free(path_copy);
-			return NULL;
+			return (NULL);
 		}
 
-		snprintf(full_path, strlen(dir) + strlen(command) + 2, "%s/%s", dir, command);
+		snprintf(full_path, strlen(dir) + strlen(command) + 2,
+			"%s/%s", dir, command);
 
 		if (access(full_path, X_OK) == 0)
 		{
 			free(path_copy);
-			return full_path; /* Retourner directement full_path, pas besoin de strdup */
+			return (full_path);
 		}
 
-		free(full_path); /* Libérer la mémoire si la commande n'est pas trouvée */
+		free(full_path);
 		dir = strtok(NULL, ":");
 	}
 
 	/* 5. Rien trouvé */
 	free(path_copy);
-	return NULL;
+	return (NULL);
 }
 
 /**
@@ -82,7 +83,7 @@ char **_split_line(char *line)
 	if (!tokens)
 	{
 		/* Retourner NULL au lieu de fermer le shell */
-		return NULL;
+		return (NULL);
 	}
 
 	token = strtok(line, " \t\r\n");
@@ -98,7 +99,7 @@ char **_split_line(char *line)
 			if (!tokens)
 			{
 				/* Retourner NULL au lieu de fermer le shell */
-				return NULL;
+				return (NULL);
 			}
 		}
 
