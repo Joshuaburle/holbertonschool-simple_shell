@@ -42,12 +42,12 @@ int is_empty_or_whitespace(char *line)
 {
 	int i;
 
-	if (line == NULL || strlen(line) == 0)
+	if (line == NULL)
 		return (1);
 
 	for (i = 0; line[i] != '\0'; i++)
 	{
-		if (line[i] != ' ' && line[i] != '\t')
+		if (line[i] != ' ' && line[i] != '\t' && line[i] != '\r' && line[i] != '\n')
 			return (0);
 	}
 	return (1);

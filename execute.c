@@ -18,7 +18,7 @@ int execute_command(char *command, char *program_name)
 
 	/* Split command into arguments */
 	argv = _split_line(command);
-	if (argv == NULL)
+	if (argv == NULL || argv[0] == NULL)
 		return (1);
 
 	/* Check if it's an exit command */
@@ -33,7 +33,7 @@ int execute_command(char *command, char *program_name)
 	if (full_path == NULL)
 	{
 		/* Command not found - don't fork, just show error */
-		fprintf(stderr, "%s: %s: command not found\n", program_name, argv[0]);
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
 		free_tokens(argv);
 		return (1);
 	}
