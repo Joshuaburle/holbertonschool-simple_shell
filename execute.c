@@ -58,7 +58,7 @@ int run_command(char *full_path, char **argv, char *program_name)
  * @program_name: Nom du programme shell (argv[0])
  * Return: 1 pour continuer, 0 pour quitter
  */
-int execute_command(char *command, char *program_name)
+int execute_command(char *command, char *program_name, int line_num)
 {
 	char **argv;
 	char *full_path;
@@ -76,7 +76,7 @@ int execute_command(char *command, char *program_name)
 	full_path = find_command(argv[0]);
 	if (full_path == NULL)
 	{
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		fprintf(stderr, "%s: %d: %s: not found\n", program_name, line_num, argv[0]);
 		free_tokens(argv);
 		return (1);
 	}

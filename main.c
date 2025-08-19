@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 {
 	char *line;
 	int status = 1;
+	static int line_count = 1;
 
 	(void)argc;
 
@@ -42,10 +43,11 @@ int main(int argc, char **argv)
 		}
 
 		/* Execute command */
-		status = execute_command(line, argv[0]);
+		status = execute_command(line, argv[0], line_count);
 
 		/* Clean up */
 		free(line);
+		line_count++;
 	}
 
 	return (0);
