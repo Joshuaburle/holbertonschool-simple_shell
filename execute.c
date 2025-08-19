@@ -28,6 +28,18 @@ int execute_command(char *command, char *program_name)
 		return (0);
 	}
 
+	/* Check if it's an env command */
+	if (strcmp(argv[0], "env") == 0)
+	{
+		int i;
+		for (i = 0; environ[i] != NULL; i++)
+		{
+			printf("%s\n", environ[i]);
+		}
+		free_tokens(argv);
+		return (1);
+	}
+
 	/* Find the full path of the command BEFORE forking */
 	full_path = find_command(argv[0]);
 	if (full_path == NULL)
