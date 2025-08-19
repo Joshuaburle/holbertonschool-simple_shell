@@ -1,5 +1,62 @@
 #include "shell.h"
-#include <errno.h>
+
+
+
+/**
+ * handle_builtin_env - Gère la commande intégrée env
+ * @argv: Tableau d'arguments
+ * Return: 1 pour continuer
+ */
+int handle_builtin_env(char **argv)
+{
+	int i;
+	(void)argv; /* Éviter l'avertissement de paramètre non utilisé */
+
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		printf("%s\n", environ[i]);
+	}
+	return (1); /* Continue le shell */
+}
+
+/**
+ * execute_external_command - Exécute une commande externe
+ * @argv: Tableau d'arguments
+ * @full_path: Chemin complet de la commande
+ * @program_name: Nom du programme
+ * Return: 1 pour continuer
+ */
+int execute_external_command(char **argv, char *full_path, char *program_name)
+{
+	pid_t pid;
+	int status;
+
+	/* Création et exécution du processus - SEULEMENT si la commande existe */
+	pid = fork();
+	if (pid == 0)
+	{
+		/* Processus enfant */
+		if (execve(full_path, argv, environ) == -1)
+		{
+			/* Erreur système - simple */
+			perror(program_name);
+			_exit(127); /* Code simple pour erreur */
+		}
+	}
+	else if (pid < 0)
+	{
+		/* Échec du fork */
+		perror("Error");
+		return (1); /* Continue le shell */
+	}
+	else
+	{
+		/* Le processus parent attend l'enfant */
+		wait(&status);
+	}
+
+	return (1); /* Continue le shell */
+}
 
 /**
  * execute_command - Exécute une commande
@@ -9,12 +66,9 @@
  */
 int execute_command(char *command, char *program_name)
 {
-	pid_t pid;
-	int status;
 	char **argv;
 	char *full_path;
-
-	(void)program_name; /* Éviter l'avertissement de paramètre non utilisé */
+	int status = 1;
 
 	/* Gestion des commandes vides ou avec seulement des espaces */
 	if (command == NULL || is_empty_or_whitespace(command))
@@ -35,57 +89,26 @@ int execute_command(char *command, char *program_name)
 	/* Gestion de la commande intégrée env */
 	if (strcmp(argv[0], "env") == 0)
 	{
-		int i;
-		for (i = 0; environ[i] != NULL; i++)
-		{
-			printf("%s\n", environ[i]);
-		}
+		status = handle_builtin_env(argv);
 		free_tokens(argv);
-		return (1); /* Continue le shell */
+		return (status);
 	}
 
 	/* Recherche du chemin complet de la commande */
 	full_path = find_command(argv[0]);
 	if (full_path == NULL)
 	{
-		/* Commande non trouvée */
-		dprintf(STDERR_FILENO, "%s: 1: %s: not found\n", program_name, argv[0]);
+		/* Commande non trouvée - PAS de fork si la commande n'existe pas */
+		dprintf(STDERR_FILENO, "%s: line 1: %s: command not found\n", program_name, argv[0]);
 		free_tokens(argv);
 		return (1); /* Continue le shell */
 	}
 
-
-
-	/* Création et exécution du processus */
-	pid = fork();
-	if (pid == 0)
-	{
-		/* Processus enfant */
-		if (execve(full_path, argv, environ) == -1)
-		{
-			/* Erreur système - simple */
-			perror(program_name);
-			free_tokens(argv);
-			free(full_path);
-			_exit(127); /* Code simple pour erreur */
-		}
-	}
-	else if (pid < 0)
-	{
-		/* Échec du fork */
-		perror("Error");
-		free_tokens(argv);
-		free(full_path);
-		return (1); /* Continue le shell */
-	}
-	else
-	{
-		/* Le processus parent attend l'enfant */
-		wait(&status);
-	}
+	/* Exécution de la commande externe */
+	status = execute_external_command(argv, full_path, program_name);
 
 	/* Nettoyage et continuation */
 	free_tokens(argv);
 	free(full_path);
-	return (1); /* Continue le shell */
+	return (status);
 }
