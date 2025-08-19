@@ -18,15 +18,10 @@ void display_prompt(void);
 char *read_line(void);
 int is_empty_or_whitespace(char *line);
 char **_split_line(char *line);
-int execute_command(char *full_path, char **argv, char *program_name);
-int find_command(char **args, char *program_name);
-char *find_command_in_path(char *command);
+int execute_command(char *command, char *program_name);
+char *find_command(char *command);
 int file_exists(char *filepath);
 void free_tokens(char **tokens);
 char *get_path_env(void);
-
-/* Prototypes des commandes intégrées */
-int builtin_exit(char **args, char *prog_name);
-int builtin_env(char **args, char *prog_name);
 
 #endif

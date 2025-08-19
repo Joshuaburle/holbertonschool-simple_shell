@@ -34,57 +34,18 @@ char *get_path_env(void)
 }
 
 /**
- * find_command - Trouve et exécute une commande
- * @args: Arguments de la commande
- * @program_name: Nom du programme shell
- * Return: 0 en cas de succès, 127 en cas d'échec
+ * find_command - Trouve le chemin complet d'une commande
+ * @command: La commande à trouver
+ * Return: Chemin complet si trouvé, NULL sinon
  */
-int find_command(char **args, char *program_name)
-{
-	char *full_path;
-
-	/* Gestion des commandes vides */
-	if (args == NULL || args[0] == NULL)
-		return (127);
-
-	/* Gestion des commandes intégrées */
-	if (strcmp(args[0], "exit") == 0)
-		return (builtin_exit(args, program_name));
-
-	if (strcmp(args[0], "env") == 0)
-		return (builtin_env(args, program_name));
-
-	/* Gestion des chemins absolus */
-	if (strchr(args[0], '/') != NULL)
-	{
-		if (file_exists(args[0]))
-			return (execute_command(args[0], args, program_name));
-		
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		return (127);
-	}
-
-	/* Recherche dans le PATH */
-	full_path = find_command_in_path(args[0]);
-	if (full_path == NULL)
-	{
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		return (127);
-	}
-
-	/* Exécution de la commande trouvée */
-	return (execute_command(full_path, args, program_name));
-}
-
-/**
- * find_command_in_path - Trouve une commande dans le PATH
- * @command: Nom de la commande
- * Return: Chemin complet ou NULL si non trouvé
- */
-char *find_command_in_path(char *command)
+char *find_command(char *command)
 {
 	char *path_env, *path_copy, *dir, *full_path;
 	size_t needed_size;
+
+	/* Gestion des chemins absolus */
+	if (strchr(command, '/') != NULL)
+		return (file_exists(command) ? strdup(command) : NULL);
 
 	/* Récupération de la variable d'environnement PATH */
 	path_env = get_path_env();

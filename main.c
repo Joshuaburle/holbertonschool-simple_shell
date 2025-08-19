@@ -20,7 +20,6 @@ void sigint_handler(int sig)
 int main(int argc, char **argv)
 {
 	char *line;
-	char **args;
 	int status = 1;
 
 	(void)argc;
@@ -43,27 +42,10 @@ int main(int argc, char **argv)
 			break;
 		}
 
-		/* Division de la commande en arguments */
-		args = _split_line(line);
-		if (args == NULL || args[0] == NULL)
-		{
-			free(line);
-			continue;
-		}
-
-		/* Vérification des commandes vides */
-		if (is_empty_or_whitespace(line))
-		{
-			free_tokens(args);
-			free(line);
-			continue;
-		}
-
 		/* Exécution de la commande */
-		status = find_command(args, argv[0]);
+		status = execute_command(line, argv[0]);
 
 		/* Nettoyage */
-		free_tokens(args);
 		free(line);
 	}
 
