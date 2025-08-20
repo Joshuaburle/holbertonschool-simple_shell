@@ -15,11 +15,11 @@ char *find_command(char *command)
 	{
 		if (access(command, X_OK) == 0) /* exécutable */
 		{
-			return strdup(command);
+			return (strdup(command));
 		}
 		else
 		{
-			return NULL;
+			return (NULL);
 		}
 	}
 
@@ -28,7 +28,7 @@ char *find_command(char *command)
 	if (!path_env || strlen(path_env) == 0)
 	{
 		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
-		return NULL;
+		return (NULL);
 	}
 
 	/* 3. Faire une copie modifiable */
@@ -36,7 +36,7 @@ char *find_command(char *command)
 	if (!path_copy)
 	{
 		/* Retourner NULL au lieu de fermer le shell */
-		return NULL;
+		return (NULL);
 	}
 
 	/* 4. Parcourir chaque dossier du PATH */
@@ -48,7 +48,7 @@ char *find_command(char *command)
 		if (access(full_path, X_OK) == 0)
 		{
 			free(path_copy);
-			return strdup(full_path);
+			return (strdup(full_path));
 		}
 
 		dir = strtok(NULL, ":");
@@ -56,7 +56,7 @@ char *find_command(char *command)
 
 	/* 5. Rien trouvé */
 	free(path_copy);
-	return NULL;
+	return (NULL);
 }
 
 /**
@@ -73,7 +73,7 @@ char **_split_line(char *line)
 	if (!tokens)
 	{
 		/* Retourner NULL au lieu de fermer le shell */
-		return NULL;
+		return (NULL);
 	}
 
 	token = strtok(line, " \t\r\n");
@@ -89,7 +89,7 @@ char **_split_line(char *line)
 			if (!tokens)
 			{
 				/* Retourner NULL au lieu de fermer le shell */
-				return NULL;
+				return (NULL);
 			}
 		}
 
