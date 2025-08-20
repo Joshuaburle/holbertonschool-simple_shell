@@ -5,23 +5,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
 #include <signal.h>
+#include <errno.h>
 
-/* Variables globales */
 extern char **environ;
 
-/* Prototypes de fonctions */
-void sigint_handler(int sig);
+/* prompt + I/O */
 void display_prompt(void);
 char *read_line(void);
 int is_empty_or_whitespace(char *line);
-char **_split_line(char *line);
-int execute_command(char *command, char *program_name);
-char *find_command(char *command);
-int file_exists(char *filepath);
-void free_tokens(char **tokens);
-char *get_path_env(void);
 
-#endif
+/* exec */
+int execute_command(char *command, char *program_name);
+char *find_command(const char *cmd);
+
+/* split */
+char **_split_line(char *line);
+void free_tokens(char **tokens);
+
+#endif /* SHELL_H */
