@@ -14,27 +14,12 @@ static void sigint_handler(int sig)
 }
 
 /**
- * free_memory - Libère la mémoire allouée
- * @line: Ligne de commande
- * @args: Arguments de la commande
- * Return: void
- */
-void free_memory(char *line, char **args)
-{
-	if (line)
-		free(line);
-	if (args)
-		free_tokens(args);
-}
-
-/**
- * main - Point d'entrée principal du shell
+ * main - Point d'entrée principal du shell (Tâche 0.1)
  * Return: 0 en cas de succès
  */
 int main(void)
 {
 	char *line = NULL;
-	char **args = NULL;
 	int status = 1;
 
 	/* Configure la gestion de Ctrl+C */
@@ -63,21 +48,12 @@ int main(void)
 			continue;
 		}
 
-		/* Divise la ligne en arguments */
-		args = _split_line(line);
-		if (!args)
-		{
-			free(line);
-			continue;
-		}
-
-		/* Exécute la commande */
+		/* Exécute la commande simple (un seul mot) */
 		status = execute_command(line, "shell");
 
 		/* Nettoie la mémoire */
-		free_memory(line, args);
+		free(line);
 		line = NULL;
-		args = NULL;
 
 		/* Sort si exit demandé */
 		if (status == 0)

@@ -36,17 +36,15 @@ int wait_for_child(pid_t pid)
 }
 
 /**
- * execute_command - Exécute une commande ou une commande intégrée
- * @command: La commande à exécuter
+ * execute_command - Exécute une commande simple (Tâche 0.1)
+ * @command: La commande à exécuter (un seul mot)
  * @program_name: Nom du programme shell
  * Return: 1 pour continuer, 0 pour quitter
  */
 int execute_command(char *command, char *program_name)
 {
 	pid_t pid;
-	char **argv = NULL;
 	char *full_path = NULL;
-	int builtin_status;
 
 	(void)program_name;
 
@@ -54,48 +52,31 @@ int execute_command(char *command, char *program_name)
 	if (!command || is_empty_or_whitespace(command))
 		return (1);
 
-	/* Divise la commande en arguments */
-	argv = _split_line(command);
-	if (!argv || !argv[0])
+	/* Vérifie si la commande existe et est exécutable */
+	if (access(command, X_OK) == 0)
 	{
-		free_tokens(argv);
-		return (1);
+		full_path = strdup(command);
 	}
-
-	/* Vérifie d'abord les commandes intégrées */
-	builtin_status = check_builtin(argv);
-	if (builtin_status == -1)
+	else
 	{
-		free_tokens(argv);
-		return (0); /* Sort du shell */
-	}
-	else if (builtin_status == 1)
-	{
-		free_tokens(argv);
-		return (1); /* Continue */
-	}
-
-	/* Cherche la commande dans le PATH */
-	full_path = find_command(argv[0]);
-	if (!full_path)
-	{
+		/* Commande non trouvée */
 		dprintf(STDERR_FILENO, "./shell: No such file or directory\n");
-		free_tokens(argv);
 		return (1);
 	}
 
 	/* Crée le processus enfant */
-	pid = create_process();
+	pid = fork();
 	if (pid == -1)
 	{
+		perror("fork");
 		free(full_path);
-		free_tokens(argv);
 		return (1);
 	}
 
 	if (pid == 0)
 	{
 		/* Processus enfant : exécute la commande */
+		char *argv[] = {command, NULL};
 		execve(full_path, argv, environ);
 		/* Si on arrive ici, execve a échoué */
 		dprintf(STDERR_FILENO, "./shell: No such file or directory\n");
@@ -104,11 +85,10 @@ int execute_command(char *command, char *program_name)
 	else
 	{
 		/* Processus parent : attend l'enfant */
-		wait_for_child(pid);
+		wait(NULL);
 	}
 
 	/* Nettoie la mémoire */
 	free(full_path);
-	free_tokens(argv);
 	return (1);
 }
