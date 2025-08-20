@@ -3,7 +3,7 @@
 /**
  * file_exists - Vérifie si un fichier existe et est exécutable
  * @filepath: Chemin vers le fichier
- * Return: 1 si le fichier existe et est exécutable, 0 sinon
+ * Return: 1 si le fichier existe et est exécutable, 0 sinon, -1 si permission denied
  */
 int file_exists(char *filepath)
 {
@@ -11,10 +11,15 @@ int file_exists(char *filepath)
 
 	if (stat(filepath, &st) == 0)
 	{
-		if (S_ISREG(st.st_mode) && access(filepath, X_OK) == 0)
-			return (1);
+		if (S_ISREG(st.st_mode))
+		{
+			if (access(filepath, X_OK) == 0)
+				return (1); /* Existe et exécutable */
+			else
+				return (-1); /* Existe mais pas exécutable */
+		}
 	}
-	return (0);
+	return (0); /* N'existe pas */
 }
 
 /**
@@ -50,12 +55,15 @@ char *search_in_path_directory(const char *dir, const char *cmd)
 char *find_command(const char *cmd)
 {
 	char *path_env, *path_copy, *dir, *full_path;
+	int file_status;
 
 	/* Si c'est un chemin absolu, vérifie s'il existe et est exécutable */
 	if ((cmd[0] == '/') || ((cmd[0] == '.') && (cmd[1] == '/')))
 	{
-		if (file_exists((char *)cmd))
+		file_status = file_exists((char *)cmd);
+		if (file_status == 1)
 			return (strdup(cmd));
+		/* Return NULL pour les chemins absolus - l'erreur sera gérée dans execute.c */
 		return (NULL);
 	}
 

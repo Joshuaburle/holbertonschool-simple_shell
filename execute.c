@@ -37,7 +37,7 @@ int execute_command(char *command, char *program_name)
 	{
 		free_tokens(argv);
 		free(command_copy);
-		return (0);
+		exit(0); /* Exit directly instead of returning */
 	}
 
 	/* Check if it's env command */
@@ -46,18 +46,38 @@ int execute_command(char *command, char *program_name)
 		print_env();
 		free_tokens(argv);
 		free(command_copy);
-		return (1);
+		return (0);
 	}
 
 	/* For Simple shell 0.3+ - Handle PATH, don't fork if command doesn't exist */
 	cmd_path = find_command(argv[0]);
 	if (cmd_path == NULL)
 	{
+		/* Check if it's an absolute path with permission issue */
+		if ((argv[0][0] == '/') || ((argv[0][0] == '.') && (argv[0][1] == '/')))
+		{
+			/* It's an absolute path - check if file exists but not executable */
+			struct stat st;
+			if (stat(argv[0], &st) == 0)
+			{
+				fprintf(stderr, "%s: 1: %s: Permission denied\n", program_name, argv[0]);
+				free_tokens(argv);
+				free(command_copy);
+				return (126);
+			}
+			else
+			{
+				fprintf(stderr, "%s: 1: %s: No such file or directory\n", program_name, argv[0]);
+				free_tokens(argv);
+				free(command_copy);
+				return (127);
+			}
+		}
 		/* Command not found - print error and don't fork */
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		fprintf(stderr, "%s: 1: %s: command not found\n", program_name, argv[0]);
 		free_tokens(argv);
 		free(command_copy);
-		return (1);
+		return (127);
 	}
 
 	pid = fork();
@@ -72,6 +92,8 @@ int execute_command(char *command, char *program_name)
 			free(command_copy);
 			_exit(127);
 		}
+		/* execve succeeded, this should never be reached */
+		_exit(0);
 	}
 	else if (pid < 0)
 	{
@@ -86,13 +108,18 @@ int execute_command(char *command, char *program_name)
 	{
 		/* Parent process waits for child */
 		wait(&status);
+		
+		/* Free allocated memory */
+		free_tokens(argv);
+		free(cmd_path);
+		free(command_copy);
+		
+		/* Return the exit status of the child */
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
+		else
+			return (1);
 	}
-
-	/* Free allocated memory */
-	free_tokens(argv);
-	free(cmd_path);
-	free(command_copy);
-	return (1);
 }
 
 /**

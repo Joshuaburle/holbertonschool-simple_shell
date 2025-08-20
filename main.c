@@ -34,21 +34,21 @@ void free_memory(char *line, char **args)
  */
 int process_command(char *line)
 {
-	int status = 1;
+	int exit_code;
 
 	/* Ignore les lignes vides */
 	if (is_empty_or_whitespace(line))
 	{
 		free(line);
-		return (1);
+		return (0); /* Success for empty lines */
 	}
 
 	/* Exécute la commande */
-	status = execute_command(line, "hsh");
+	exit_code = execute_command(line, "hsh");
 
 	/* Nettoie la mémoire */
 	free(line);
-	return (status);
+	return (exit_code);
 }
 
 /**
@@ -58,13 +58,13 @@ int process_command(char *line)
 int main(void)
 {
 	char *line = NULL;
-	int status = 1;
+	int last_exit_code = 0;
 
 	/* Configure la gestion de Ctrl+C */
 	signal(SIGINT, sigint_handler);
 
 	/* Boucle principale du shell */
-	while (status)
+	while (1)
 	{
 		/* Affiche le prompt si mode interactif */
 		if (isatty(STDIN_FILENO))
@@ -80,9 +80,13 @@ int main(void)
 		}
 
 		/* Traite la commande */
-		status = process_command(line);
+		last_exit_code = process_command(line);
 		line = NULL;
 	}
 
+	/* In non-interactive mode, return the last command's exit code */
+	if (!isatty(STDIN_FILENO))
+		return (last_exit_code);
+	
 	return (0);
 }
