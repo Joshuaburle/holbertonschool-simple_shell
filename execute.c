@@ -10,36 +10,25 @@ char *find_command(char *command)
 	char *path_env, *path_copy, *dir;
 	char full_path[1024];
 
-	/* 1. Si la commande contient déjà un '/' */
+	/* Si la commande contient déjà un '/' */
 	if (strchr(command, '/'))
 	{
-		if (access(command, X_OK) == 0) /* exécutable */
-		{
+		if (access(command, X_OK) == 0)
 			return (strdup(command));
-		}
-		else
-		{
-			return (NULL);
-		}
+		return (NULL);
 	}
 
-	/* 2. Récupérer le PATH */
+	/* Récupérer le PATH */
 	path_env = getenv("PATH");
 	if (!path_env || strlen(path_env) == 0)
-	{
-		/* PATH vide ou NULL - on ne peut pas chercher dans les dossiers du PATH */
 		return (NULL);
-	}
 
-	/* 3. Faire une copie modifiable */
+	/* Faire une copie modifiable */
 	path_copy = strdup(path_env);
 	if (!path_copy)
-	{
-		/* Retourner NULL au lieu de fermer le shell */
 		return (NULL);
-	}
 
-	/* 4. Parcourir chaque dossier du PATH */
+	/* Parcourir chaque dossier du PATH */
 	dir = strtok(path_copy, ":");
 	while (dir != NULL)
 	{
@@ -54,7 +43,7 @@ char *find_command(char *command)
 		dir = strtok(NULL, ":");
 	}
 
-	/* 5. Rien trouvé */
+	/* Rien trouvé */
 	free(path_copy);
 	return (NULL);
 }
@@ -71,10 +60,7 @@ char **_split_line(char *line)
 	char *token;
 
 	if (!tokens)
-	{
-		/* Retourner NULL au lieu de fermer le shell */
 		return (NULL);
-	}
 
 	token = strtok(line, " \t\r\n");
 	while (token != NULL)
@@ -87,10 +73,7 @@ char **_split_line(char *line)
 			bufsize += 64;
 			tokens = realloc(tokens, bufsize * sizeof(char *));
 			if (!tokens)
-			{
-				/* Retourner NULL au lieu de fermer le shell */
 				return (NULL);
-			}
 		}
 
 		token = strtok(NULL, " \t\r\n");
