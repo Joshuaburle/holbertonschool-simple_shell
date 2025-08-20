@@ -1,33 +1,20 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-/* ===== INCLUSIONS SYSTÈME ===== */
-#include <stdio.h>      /* printf, dprintf, fprintf */
-#include <stdlib.h>     /* malloc, free, exit */
-#include <string.h>     /* strcmp, strdup, strtok, strchr, strlen */
-#include <unistd.h>     /* access, execve, fork, getcwd */
-#include <sys/types.h>  /* pid_t */
-#include <sys/wait.h>   /* wait, waitpid */
-#include <sys/stat.h>   /* stat, S_ISREG */
-#include <signal.h>     /* signal, SIGINT */
-#include <errno.h>      /* errno */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-/* ===== VARIABLES GLOBALES ===== */
-extern char **environ;  /* Tableau des variables d'environnement du système */
+extern char **environ;
 
-/* ===== PROTOTYPES DES FONCTIONS ===== */
-/* === I/O ET PROMPT === */
-void display_prompt(void);                    /* Affiche l'invite #cisfun$ */
-char *read_line(void);                        /* Lit une ligne depuis stdin */
-int is_empty_or_whitespace(char *line);       /* Vérifie si ligne vide/espaces */
-
-/* === GESTION DU PATH === */
-char *find_command(char *command);            /* Trouve chemin complet d'une commande */
-
-/* === PARSING DES COMMANDES === */
-char **_split_line(char *line);               /* Divise ligne en tableau d'arguments */
-
-/* === EXÉCUTION === */
-int execute_command(char *command, char *program_name); /* Exécute une commande */
+void display_prompt(void);
+char *read_line(void);
+int is_empty_or_whitespace(char *line);
+char **parse_command(char *command, int *argc);
+int fork_and_exec(char *cmd_path, char **argv, char *program_name);
+int execute_command(char *command, char *program_name);
 
 #endif
