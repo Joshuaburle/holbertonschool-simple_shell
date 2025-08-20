@@ -1,17 +1,18 @@
 #include "shell.h"
 
 /**
- * display_prompt - Displays the shell prompt
+ * display_prompt - Affiche l'invite du shell
+ * Return: void
  */
 void display_prompt(void)
 {
-	write(STDOUT_FILENO, "($) ", 4);
+	write(STDOUT_FILENO, "#cisfun$ ", 9);
 	fflush(stdout);
 }
 
 /**
- * read_line - Reads a line from stdin
- * Return: Pointer to the line, or NULL on EOF
+ * read_line - Lit une ligne depuis stdin
+ * Return: Pointeur vers la ligne, ou NULL sur EOF
  */
 char *read_line(void)
 {
@@ -26,7 +27,7 @@ char *read_line(void)
 		return (NULL);
 	}
 
-	/* Remove newline character */
+	/* Supprime le \n de fin de ligne */
 	if (read_size > 0 && line[read_size - 1] == '\n')
 		line[read_size - 1] = '\0';
 
@@ -34,20 +35,21 @@ char *read_line(void)
 }
 
 /**
- * is_empty_or_whitespace - Checks if line is empty or only whitespace
- * @line: The line to check
- * Return: 1 if empty/whitespace, 0 otherwise
+ * is_empty_or_whitespace - Vérifie si la ligne est vide ou juste des espaces
+ * @line: La ligne à vérifier
+ * Return: 1 si vide/espaces, 0 sinon
  */
 int is_empty_or_whitespace(char *line)
 {
 	int i;
 
-	if (line == NULL || strlen(line) == 0)
+	if (line == NULL)
 		return (1);
 
 	for (i = 0; line[i] != '\0'; i++)
 	{
-		if (line[i] != ' ' && line[i] != '\t')
+		if (line[i] != ' ' && line[i] != '\t' &&
+			line[i] != '\r' && line[i] != '\n')
 			return (0);
 	}
 	return (1);

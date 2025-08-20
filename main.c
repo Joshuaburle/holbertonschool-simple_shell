@@ -1,51 +1,87 @@
 #include "shell.h"
 
 /**
- * sigint_handler - Handles Ctrl+C signal
- * @sig: Signal number
+ * sigint_handler - Gère le signal Ctrl+C
+ * @sig: Numéro du signal
+ * Return: void
  */
-void sigint_handler(int sig)
+static void sigint_handler(int sig)
 {
 	(void)sig;
 	write(STDOUT_FILENO, "\n", 1);
+	if (isatty(STDIN_FILENO))
+		display_prompt();
 }
 
 /**
- * main - Entry point of the shell
- * @argc: Number of arguments
- * @argv: Array of arguments
- * Return: 0 on success
+ * free_memory - Libère la mémoire allouée
+ * @line: Ligne de commande
+ * @args: Arguments de la commande
+ * Return: void
  */
-int main(int argc, char **argv)
+void free_memory(char *line, char **args)
 {
-	char *line;
+	if (line)
+		free(line);
+	if (args)
+		free_tokens(args);
+}
+
+/**
+ * main - Point d'entrée principal du shell
+ * Return: 0 en cas de succès
+ */
+int main(void)
+{
+	char *line = NULL;
+	char **args = NULL;
 	int status = 1;
 
-	(void)argc;
-
-	/* Set up signal handling for Ctrl+C */
+	/* Configure la gestion de Ctrl+C */
 	signal(SIGINT, sigint_handler);
 
+	/* Boucle principale du shell */
 	while (status)
 	{
-		/* Display prompt in interactive mode */
+		/* Affiche le prompt si mode interactif */
 		if (isatty(STDIN_FILENO))
 			display_prompt();
 
-		/* Read command line */
+		/* Lit la commande utilisateur */
 		line = read_line();
-		if (line == NULL)
+		if (line == NULL) /* Ctrl+D détecté */
 		{
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			break;
 		}
 
-		/* Execute command */
-		status = execute_command(line, argv[0]);
+		/* Ignore les lignes vides */
+		if (is_empty_or_whitespace(line))
+		{
+			free(line);
+			continue;
+		}
 
-		/* Clean up */
-		free(line);
+		/* Divise la ligne en arguments */
+		args = _split_line(line);
+		if (!args)
+		{
+			free(line);
+			continue;
+		}
+
+		/* Exécute la commande */
+		status = execute_command(line, "shell");
+
+		/* Nettoie la mémoire */
+		free_memory(line, args);
+		line = NULL;
+		args = NULL;
+
+		/* Sort si exit demandé */
+		if (status == 0)
+			break;
 	}
 
 	return (0);
