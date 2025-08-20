@@ -8,12 +8,7 @@
  */
 void write_error(char *prog, char *cmd, char *msg)
 {
-	write(STDERR_FILENO, prog, strlen(prog));
-	write(STDERR_FILENO, ": 1: ", 5);
-	write(STDERR_FILENO, cmd, strlen(cmd));
-	write(STDERR_FILENO, ": ", 2);
-	write(STDERR_FILENO, msg, strlen(msg));
-	write(STDERR_FILENO, "\n", 1);
+	fprintf(stderr, "%s: 1: %s: %s\n", prog, cmd, msg);
 }
 
 /**
@@ -24,12 +19,19 @@ void write_error(char *prog, char *cmd, char *msg)
  */
 int handle_builtin(char **argv, char *command_copy)
 {
+	int exit_code = 0;
+	
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
 	{
+		/* Parse exit code if provided */
+		if (argv[1] != NULL)
+		{
+			exit_code = atoi(argv[1]);
+		}
 		free_tokens(argv);
 		free(command_copy);
-		exit(0); /* Exit directly - never returns */
+		exit(exit_code); /* Exit directly - never returns */
 	}
 
 	/* Check if it's env command */
@@ -82,14 +84,13 @@ int handle_command_not_found(char *program_name, char **argv, char *command_copy
 }
 
 /**
- * execute_fork - Fork et exécute la commande
- * @cmd_path: Chemin de la commande
- * @argv: Arguments
- * @command_copy: Copie de la commande
- * @program_name: Nom du programme
+ * execute_fork - Execute command in child process
+ * @cmd_path: Path to command
+ * @argv: Array of arguments
+ * @command_copy: Copy of original command
  * Return: Code de sortie
  */
-int execute_fork(char *cmd_path, char **argv, char *command_copy, char *program_name)
+int execute_fork(char *cmd_path, char **argv, char *command_copy)
 {
 	pid_t pid;
 	int status;
@@ -100,7 +101,7 @@ int execute_fork(char *cmd_path, char **argv, char *command_copy, char *program_
 		/* Child process */
 		if (execve(cmd_path, argv, environ) == -1)
 		{
-			write_error(program_name, argv[0], "Exec failed");
+			perror(argv[0]);
 			free_tokens(argv);
 			free(cmd_path);
 			free(command_copy);
@@ -179,7 +180,7 @@ int execute_command(char *command, char *program_name)
 	}
 
 	/* Execute the command using the new execute_fork function */
-	return (execute_fork(cmd_path, argv, command_copy, program_name));
+	return (execute_fork(cmd_path, argv, command_copy));
 }
 
 

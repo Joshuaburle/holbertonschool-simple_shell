@@ -6,7 +6,7 @@
  */
 void display_prompt(void)
 {
-	write(STDOUT_FILENO, "#cisfun$ ", 9);
+	printf("#cisfun$ ");
 	fflush(stdout);
 }
 
@@ -65,7 +65,6 @@ void print_env(void)
 
 	for (i = 0; environ[i] != NULL; i++)
 	{
-		write(STDOUT_FILENO, environ[i], strlen(environ[i]));
-		write(STDOUT_FILENO, "\n", 1);
+		printf("%s\n", environ[i]);
 	}
 }

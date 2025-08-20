@@ -35,7 +35,7 @@ int handle_builtin(char **argv, char *command_copy); /* Gère built-ins */
 char *find_command(const char *cmd);          /* Trouve commande */
 int file_exists(char *filepath);              /* Vérifie existence */
 int execute_command(char *command, char *program_name); /* Exécute */
-int execute_fork(char *cmd_path, char **argv, char *cmd_copy, char *prog);
+int execute_fork(char *cmd_path, char **argv, char *cmd_copy);
 int handle_command_not_found(char *program_name, char **argv, char *cmd_copy);
 
 /* === UTILITAIRES === */
