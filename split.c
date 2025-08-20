@@ -1,5 +1,6 @@
 #include "shell.h"
 
+<<<<<<< HEAD
 char **_split_line(char *line)
 {
 	int bufsize = 64, position = 0;
@@ -54,4 +55,31 @@ void free_tokens(char **tokens)
 	for (i = 0; tokens[i] != NULL; i++)
 		free(tokens[i]);
 	free(tokens);
+=======
+/**
+ * split - Divise une ligne en un seul argument (pour la tâche 0.1)
+ * @line: La ligne à analyser
+ * Return: Tableau avec un seul argument, ou NULL en cas d'erreur
+ */
+char **split(char *line)
+{
+	char **args = malloc(2 * sizeof(char *));
+	char *token;
+
+	if (args == NULL)
+		return (NULL);
+
+	/* Prendre seulement le premier mot (pas d'arguments) */
+	token = strtok(line, " \t\r\n");
+	if (token == NULL)
+	{
+		free(args);
+		return (NULL);
+	}
+
+	args[0] = token;
+	args[1] = NULL;
+
+	return (args);
+>>>>>>> 611fa6806319d37f6a3870695839823de17f4a11
 }

@@ -5,7 +5,8 @@ static void sigint_handler(int sig)
 {
 	(void)sig;
 	write(STDOUT_FILENO, "\n", 1);
-	display_prompt();
+	if (isatty(STDIN_FILENO))
+		display_prompt();
 }
 
 int main(int argc, char **argv)
@@ -14,13 +15,17 @@ int main(int argc, char **argv)
 	int status = 1;
 
 	(void)argc;
+
+	/* Configurer la gestion du signal Ctrl+C */
 	signal(SIGINT, sigint_handler);
 
 	while (status)
 	{
+		/* Afficher le prompt en mode interactif */
 		if (isatty(STDIN_FILENO))
 			display_prompt();
 
+		/* Lire la ligne de commande */
 		line = read_line();
 		if (line == NULL) /* Ctrl+D ou EOF */
 		{
@@ -29,9 +34,10 @@ int main(int argc, char **argv)
 			break;
 		}
 
-		/* Exécute la ligne (0 => exit) */
+		/* Exécuter la commande */
 		status = execute_command(line, argv[0]);
 
+		/* Nettoyer la mémoire */
 		free(line);
 		line = NULL;
 
