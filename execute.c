@@ -1,16 +1,13 @@
 #include "shell.h"
 
 /**
- * find_command - Finds the full path of a command
+ * find_command - Finds the full path of a command (Tâche 0.2 - pas de PATH)
  * @command: The command to find
  * Return: Full path if found, NULL otherwise
  */
 char *find_command(char *command)
 {
-	char *path_env, *path_copy, *dir;
-	char full_path[1024];
-
-	/* Si la commande contient déjà un '/' */
+	/* Pour la tâche 0.2, on ne gère que les chemins absolus/relatifs */
 	if (strchr(command, '/'))
 	{
 		if (access(command, X_OK) == 0)
@@ -18,33 +15,7 @@ char *find_command(char *command)
 		return (NULL);
 	}
 
-	/* Récupérer le PATH */
-	path_env = getenv("PATH");
-	if (!path_env || strlen(path_env) == 0)
-		return (NULL);
-
-	/* Faire une copie modifiable */
-	path_copy = strdup(path_env);
-	if (!path_copy)
-		return (NULL);
-
-	/* Parcourir chaque dossier du PATH */
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
-	{
-		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
-
-		if (access(full_path, X_OK) == 0)
-		{
-			free(path_copy);
-			return (strdup(full_path));
-		}
-
-		dir = strtok(NULL, ":");
-	}
-
-	/* Rien trouvé */
-	free(path_copy);
+	/* Pas de gestion du PATH pour la tâche 0.2 */
 	return (NULL);
 }
 
