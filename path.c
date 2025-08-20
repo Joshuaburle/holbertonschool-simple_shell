@@ -1,99 +1,102 @@
 #include "shell.h"
 
 /**
- * file_exists - Vérifie si un fichier existe et est exécutable
- * @filepath: Chemin vers le fichier
- * Return: 1 si le fichier existe et est exécutable, 0 sinon,
- *         -1 si permission denied
+ * _getenv - Recherche une variable d'environnement
+ * @name: Nom de la variable à rechercher
+ * Return: Valeur de la variable ou NULL si non trouvée
  */
-int file_exists(char *filepath)
+char *_getenv(const char *name)
 {
-	struct stat st;
+	int i, name_len;
 
-	if (stat(filepath, &st) == 0)
-	{
-		if (S_ISREG(st.st_mode))
-		{
-			if (access(filepath, X_OK) == 0)
-				return (1); /* Existe et exécutable */
-			else
-				return (-1); /* Existe mais pas exécutable */
-		}
-	}
-	return (0); /* N'existe pas */
-}
-
-/**
- * search_in_path_directory - Cherche une commande dans un répertoire du PATH
- * @dir: Répertoire à vérifier
- * @cmd: Commande à chercher
- * Return: Chemin complet si trouvé, NULL sinon
- */
-char *search_in_path_directory(const char *dir, const char *cmd)
-{
-	char *full_path;
-
-	full_path = malloc(strlen(dir) + strlen(cmd) + 2);
-	if (!full_path)
+	if (!name || !environ)
 		return (NULL);
 
-	/* Construit le chemin complet */
-	strcpy(full_path, dir);
-	strcat(full_path, "/");
-	strcat(full_path, cmd);
+	name_len = strlen(name);
 
-	/* Vérifie si le fichier existe et est exécutable */
-	if (file_exists(full_path))
-		return (full_path);
-
-	free(full_path);
+	for (i = 0; environ[i]; i++)
+	{
+		if (strncmp(environ[i], name, name_len) == 0 && 
+		    environ[i][name_len] == '=')
+		{
+			return (environ[i] + name_len + 1);
+		}
+	}
 	return (NULL);
 }
 
 /**
- * find_command - Trouve le chemin complet d'une commande dans le PATH
- * @cmd: La commande à trouver
- * Return: Chemin complet si trouvé, NULL sinon
+ * build_full_path - Construit le chemin complet vers une commande
+ * @directory: Répertoire de base
+ * @command: Nom de la commande
+ * Return: Chemin complet alloué ou NULL en cas d'erreur
+ */
+static char *build_full_path(const char *directory, const char *command)
+{
+	char *path;
+	int dir_len, cmd_len;
+
+	if (!directory || !command)
+		return (NULL);
+
+	dir_len = strlen(directory);
+	cmd_len = strlen(command);
+	
+	path = malloc(dir_len + cmd_len + 2);
+	if (!path)
+		return (NULL);
+
+	strcpy(path, directory);
+	if (directory[dir_len - 1] != '/')
+		strcat(path, "/");
+	strcat(path, command);
+
+	return (path);
+}
+
+/**
+ * find_command - Localise une commande dans le PATH
+ * @cmd: Nom de la commande à localiser
+ * Return: Chemin complet vers la commande ou NULL si non trouvée
  */
 char *find_command(const char *cmd)
 {
-	char *path_env, *path_copy, *dir, *full_path;
-	int file_status;
+	char *path_env, *path_dup, *current_dir, *full_path;
 
-	/* Si c'est un chemin absolu, vérifie s'il existe et est exécutable */
-	if ((cmd[0] == '/') || ((cmd[0] == '.') && (cmd[1] == '/')))
+	if (!cmd)
+		return (NULL);
+
+	/* Si la commande contient un slash, c'est un chemin */
+	if (strchr(cmd, '/') != NULL)
+		return (strdup(cmd));
+
+	/* Récupération de la variable PATH */
+	path_env = _getenv("PATH");
+	if (!path_env)
+		return (NULL);
+
+	/* Duplication pour manipulation avec strtok */
+	path_dup = strdup(path_env);
+	if (!path_dup)
+		return (NULL);
+
+	/* Parcours de chaque répertoire du PATH */
+	current_dir = strtok(path_dup, ":");
+	while (current_dir != NULL)
 	{
-		file_status = file_exists((char *)cmd);
-		if (file_status == 1)
-			return (strdup(cmd));
-		/* Return NULL pour les chemins absolus */
-		/* L'erreur sera gérée dans execute.c */
-		return (NULL);
-	}
-
-	/* Récupère la variable PATH */
-	path_env = getenv("PATH");
-	if (!path_env || strlen(path_env) == 0)
-		return (NULL);
-
-	path_copy = strdup(path_env);
-	if (!path_copy)
-		return (NULL);
-
-	/* Cherche dans chaque répertoire du PATH */
-	dir = strtok(path_copy, ":");
-	while (dir)
-	{
-		full_path = search_in_path_directory(dir, cmd);
+		full_path = build_full_path(current_dir, cmd);
 		if (full_path)
 		{
-			free(path_copy);
-			return (full_path);
+			if (access(full_path, X_OK) == 0)
+			{
+				free(path_dup);
+				return (full_path);
+			}
+			free(full_path);
 		}
-
-		dir = strtok(NULL, ":");
+		current_dir = strtok(NULL, ":");
 	}
 
-	free(path_copy);
+	free(path_dup);
 	return (NULL);
 }
