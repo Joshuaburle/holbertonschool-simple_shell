@@ -1,6 +1,6 @@
 #include "shell.h"
 
-/* Gère Ctrl+C (réaffiche le prompt) */
+/* Gère Ctrl+C - réaffiche le prompt */
 static void sigint_handler(int sig)
 {
 	(void)sig;
@@ -9,40 +9,68 @@ static void sigint_handler(int sig)
 		display_prompt();
 }
 
-int main(int argc, char **argv)
+/* Libère la mémoire allouée */
+void free_memory(char *line, char **args)
+{
+	if (line)
+		free(line);
+	if (args)
+		free_tokens(args);
+}
+
+/* Point d'entrée principal du shell */
+int main(void)
 {
 	char *line = NULL;
+	char **args = NULL;
 	int status = 1;
 
-	(void)argc;
-
-	/* Configurer la gestion du signal Ctrl+C */
+	/* Configure la gestion de Ctrl+C */
 	signal(SIGINT, sigint_handler);
 
+	/* Boucle principale du shell */
 	while (status)
 	{
-		/* Afficher le prompt en mode interactif */
+		/* Affiche le prompt si mode interactif */
 		if (isatty(STDIN_FILENO))
 			display_prompt();
 
-		/* Lire la ligne de commande */
+		/* Lit la commande utilisateur */
 		line = read_line();
-		if (line == NULL) /* Ctrl+D ou EOF */
+		if (line == NULL) /* Ctrl+D détecté */
 		{
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			break;
 		}
 
-		/* Exécuter la commande */
-		status = execute_command(line, argv[0]);
+		/* Ignore les lignes vides */
+		if (is_empty_or_whitespace(line))
+		{
+			free(line);
+			continue;
+		}
 
-		/* Nettoyer la mémoire */
-		free(line);
+		/* Divise la ligne en arguments */
+		args = _split_line(line);
+		if (!args)
+		{
+			free(line);
+			continue;
+		}
+
+		/* Exécute la commande */
+		status = execute_command(line, "shell");
+
+		/* Nettoie la mémoire */
+		free_memory(line, args);
 		line = NULL;
+		args = NULL;
 
+		/* Sort si exit demandé */
 		if (status == 0)
 			break;
 	}
+
 	return (0);
 }
