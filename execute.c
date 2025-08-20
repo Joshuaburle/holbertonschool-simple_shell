@@ -20,37 +20,13 @@ void write_error(char *prog, char *cmd, char *msg)
 int handle_builtin(char **argv, char *command_copy)
 {
 	int exit_code = g_last_exit_code; /* Use last exit code as default */
-	int i;
 	
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		/* Check for too many arguments */
-		if (argv[1] != NULL && argv[2] != NULL)
-		{
-			write_error("hsh", "exit", "too many arguments");
-			free_tokens(argv);
-			free(command_copy);
-			return (1); /* Don't exit, just return error */
-		}
-		
 		/* Parse exit code if provided */
 		if (argv[1] != NULL)
 		{
-			/* Validate that the argument is numeric */
-			for (i = 0; argv[1][i] != '\0'; i++)
-			{
-				if (argv[1][i] < '0' || argv[1][i] > '9')
-				{
-					if (!(i == 0 && (argv[1][i] == '+' || argv[1][i] == '-')))
-					{
-						write_error("hsh", "exit", "Illegal number");
-						free_tokens(argv);
-						free(command_copy);
-						exit(2);
-					}
-				}
-			}
 			exit_code = atoi(argv[1]);
 		}
 		free_tokens(argv);
