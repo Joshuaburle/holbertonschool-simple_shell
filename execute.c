@@ -19,7 +19,7 @@ void write_error(char *prog, char *cmd, char *msg)
  */
 int handle_builtin(char **argv, char *command_copy)
 {
-	int exit_code = 0;
+	int exit_code = g_last_exit_code; /* Use last exit code as default */
 	
 	/* Check if it's an exit command */
 	if (strcmp(argv[0], "exit") == 0)

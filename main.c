@@ -1,5 +1,8 @@
 #include "shell.h"
 
+/* Variable globale pour le dernier code de sortie */
+int g_last_exit_code = 0;
+
 /**
  * free_memory - Libère la mémoire allouée
  * @line: Ligne de commande
@@ -46,6 +49,7 @@ int main(void)
 {
 	char *line = NULL;
 	int last_exit_code = 0;
+	int command_result;
 
 	/* Boucle principale du shell */
 	while (1)
@@ -64,7 +68,12 @@ int main(void)
 		}
 
 		/* Traite la commande */
-		last_exit_code = process_command(line);
+		command_result = process_command(line);
+		if (command_result >= 0)
+		{
+			last_exit_code = command_result;
+			g_last_exit_code = command_result;
+		}
 		line = NULL;
 	}
 

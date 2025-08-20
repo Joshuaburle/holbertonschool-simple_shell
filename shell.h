@@ -14,6 +14,7 @@
 
 /* ===== VARIABLES GLOBALES ===== */
 extern char **environ;  /* Tableau des variables d'environnement du système */
+extern int g_last_exit_code; /* Dernier code de sortie pour exit sans paramètre */
 
 /* ===== PROTOTYPES DES FONCTIONS ===== */
 
