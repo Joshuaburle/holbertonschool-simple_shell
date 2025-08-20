@@ -34,7 +34,6 @@ void free_memory(char *line, char **args)
  */
 int process_command(char *line)
 {
-	char **args = NULL;
 	int status = 1;
 
 	/* Ignore les lignes vides */
@@ -44,19 +43,11 @@ int process_command(char *line)
 		return (1);
 	}
 
-	/* Divise la ligne en arguments */
-	args = _split_line(line);
-	if (!args)
-	{
-		free(line);
-		return (1);
-	}
-
 	/* Exécute la commande */
 	status = execute_command(line, "hsh");
 
 	/* Nettoie la mémoire */
-	free_memory(line, args);
+	free(line);
 	return (status);
 }
 

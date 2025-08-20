@@ -60,15 +60,6 @@ int execute_command(char *command, char *program_name)
 		return (1);
 	}
 
-	/* Debug: print arguments being passed to execve */
-	printf("DEBUG: Executing %s with args: ", cmd_path);
-	{
-		int i;
-		for (i = 0; argv[i]; i++)
-			printf("[%s] ", argv[i]);
-	}
-	printf("\n");
-
 	pid = fork();
 	if (pid == 0)
 	{
