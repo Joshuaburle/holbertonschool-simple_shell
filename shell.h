@@ -2,7 +2,7 @@
 #define SHELL_H
 
 /* ===== INCLUSIONS SYSTÈME ===== */
-#include <stdio.h>      /* printf, dprintf */
+#include <stdio.h>      /* printf, fprintf */
 #include <stdlib.h>     /* malloc, free, exit */
 #include <string.h>     /* strcmp, strdup, strtok */
 #include <unistd.h>     /* access, execve, fork, getcwd */
@@ -27,17 +27,12 @@ char **_split_line(char *line);               /* Divise ligne en tableau d'argum
 void free_tokens(char **tokens);              /* Libère mémoire des tokens */
 
 /* === COMMANDES INTÉGRÉES === */
-int check_builtin(char **args);               /* Vérifie si c'est exit/env */
 void print_env(void);                         /* Affiche l'environnement */
 
 /* === GESTION DU PATH ET EXÉCUTION === */
 char *find_command(const char *cmd);          /* Trouve chemin complet d'une commande */
 int file_exists(char *filepath);              /* Vérifie si fichier existe et exécutable */
 int execute_command(char *command, char *program_name); /* Exécute une commande */
-
-/* === GESTION DES PROCESSUS === */
-pid_t create_process(void);                   /* Crée un processus enfant */
-int wait_for_child(pid_t pid);                /* Attend fin du processus enfant */
 
 /* === UTILITAIRES === */
 void free_memory(char *line, char **args);   /* Libère mémoire allouée */

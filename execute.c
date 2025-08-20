@@ -1,129 +1,119 @@
 #include "shell.h"
 
 /**
- * create_process - Crée un nouveau processus enfant
- * Return: PID du processus créé, ou -1 en cas d'échec
- */
-pid_t create_process(void)
-{
-	pid_t pid;
-
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("fork");
-		return (-1);
-	}
-	return (pid);
-}
-
-/**
- * wait_for_child - Attend que le processus enfant se termine
- * @pid: PID du processus à attendre
- * Return: 0 en cas de succès, -1 en cas d'échec
- */
-int wait_for_child(pid_t pid)
-{
-	int status;
-
-	(void)pid;
-	if (wait(&status) == -1)
-	{
-		perror("wait");
-		return (-1);
-	}
-	return (0);
-}
-
-/**
- * handle_command_execution - Gère l'exécution d'une commande
- * @full_path: Chemin complet de la commande
- * @argv: Arguments de la commande
- * @program_name: Nom du programme shell
- * Return: 1 pour continuer, 0 pour quitter
- */
-int handle_command_execution(char *full_path, char **argv, char *program_name)
-{
-	pid_t pid;
-
-	pid = create_process();
-	if (pid == -1)
-	{
-		free(full_path);
-		free_tokens(argv);
-		return (1);
-	}
-
-	if (pid == 0)
-	{
-		/* Processus enfant : exécute la commande */
-		execve(full_path, argv, environ);
-		/* Si on arrive ici, execve a échoué */
-		dprintf(STDERR_FILENO, "%s: %s: command not found\n", program_name, argv[0]);
-		_exit(127);
-	}
-	else
-	{
-		/* Processus parent : attend l'enfant */
-		wait_for_child(pid);
-	}
-
-	return (1);
-}
-
-/**
- * execute_command - Exécute une commande ou une commande intégrée
- * @command: La commande à exécuter
- * @program_name: Nom du programme shell
- * Return: 1 pour continuer, 0 pour quitter
+ * execute_command - Executes a command
+ * @command: The command to execute
+ * @program_name: Name of the shell program (argv[0])
+ * Return: 1 to continue, 0 to exit
  */
 int execute_command(char *command, char *program_name)
 {
-	char **argv = NULL;
-	char *full_path = NULL;
-	int builtin_status;
+	pid_t pid;
+	int status;
+	char **argv;
+	char *cmd_path;
+	char *command_copy;
 
-	(void)program_name;
-
-	/* Ignore les commandes vides */
-	if (!command || is_empty_or_whitespace(command))
+	if (command == NULL || is_empty_or_whitespace(command))
 		return (1);
 
-	/* Divise la commande en arguments */
-	argv = _split_line(command);
-	if (!argv || !argv[0])
-	{
-		free_tokens(argv);
+	/* Make a copy of the command before tokenizing */
+	command_copy = strdup(command);
+	if (!command_copy)
 		return (1);
-	}
 
-	/* Vérifie d'abord les commandes intégrées */
-	builtin_status = check_builtin(argv);
-	if (builtin_status == -1)
+	/* Split command into arguments */
+	argv = _split_line(command_copy);
+	if (argv == NULL || argv[0] == NULL)
 	{
-		free_tokens(argv);
-		return (0); /* Sort du shell */
-	}
-	else if (builtin_status == 1)
-	{
-		free_tokens(argv);
-		return (1); /* Continue */
-	}
-
-	/* Cherche la commande dans le PATH */
-	full_path = find_command(argv[0]);
-	if (!full_path)
-	{
-		dprintf(STDERR_FILENO, "%s: %s: command not found\n", program_name, argv[0]);
-		free_tokens(argv);
+		if (argv)
+			free_tokens(argv);
+		free(command_copy);
 		return (1);
 	}
 
-	/* Exécute la commande */
-	handle_command_execution(full_path, argv, program_name);
+	/* Check if it's an exit command */
+	if (strcmp(argv[0], "exit") == 0)
+	{
+		free_tokens(argv);
+		free(command_copy);
+		return (0);
+	}
 
-	/* Nettoie la mémoire */
-	free(full_path);
+	/* Check if it's env command */
+	if (strcmp(argv[0], "env") == 0)
+	{
+		print_env();
+		free_tokens(argv);
+		free(command_copy);
+		return (1);
+	}
+
+	/* For Simple shell 0.3+ - Handle PATH, don't fork if command doesn't exist */
+	cmd_path = find_command(argv[0]);
+	if (cmd_path == NULL)
+	{
+		/* Command not found - print error and don't fork */
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, argv[0]);
+		free_tokens(argv);
+		free(command_copy);
+		return (1);
+	}
+
+	/* Debug: print arguments being passed to execve */
+	printf("DEBUG: Executing %s with args: ", cmd_path);
+	{
+		int i;
+		for (i = 0; argv[i]; i++)
+			printf("[%s] ", argv[i]);
+	}
+	printf("\n");
+
+	pid = fork();
+	if (pid == 0)
+	{
+		/* Child process */
+		if (execve(cmd_path, argv, environ) == -1)
+		{
+			perror(program_name);
+			free_tokens(argv);
+			free(cmd_path);
+			free(command_copy);
+			_exit(127);
+		}
+	}
+	else if (pid < 0)
+	{
+		/* Fork failed */
+		perror("Error");
+		free_tokens(argv);
+		free(cmd_path);
+		free(command_copy);
+		return (1);
+	}
+	else
+	{
+		/* Parent process waits for child */
+		wait(&status);
+	}
+
+	/* Free allocated memory */
 	free_tokens(argv);
+	free(cmd_path);
+	free(command_copy);
 	return (1);
+}
+
+/**
+ * print_env - Print environment variables
+ * Return: void
+ */
+void print_env(void)
+{
+	int i;
+
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		printf("%s\n", environ[i]);
+	}
 }
