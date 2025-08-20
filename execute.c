@@ -36,6 +36,42 @@ int wait_for_child(pid_t pid)
 }
 
 /**
+ * handle_command_execution - Gère l'exécution d'une commande
+ * @full_path: Chemin complet de la commande
+ * @argv: Arguments de la commande
+ * @program_name: Nom du programme shell
+ * Return: 1 pour continuer, 0 pour quitter
+ */
+int handle_command_execution(char *full_path, char **argv, char *program_name)
+{
+	pid_t pid;
+
+	pid = create_process();
+	if (pid == -1)
+	{
+		free(full_path);
+		free_tokens(argv);
+		return (1);
+	}
+
+	if (pid == 0)
+	{
+		/* Processus enfant : exécute la commande */
+		execve(full_path, argv, environ);
+		/* Si on arrive ici, execve a échoué */
+		dprintf(STDERR_FILENO, "%s: %s: command not found\n", program_name, argv[0]);
+		_exit(127);
+	}
+	else
+	{
+		/* Processus parent : attend l'enfant */
+		wait_for_child(pid);
+	}
+
+	return (1);
+}
+
+/**
  * execute_command - Exécute une commande ou une commande intégrée
  * @command: La commande à exécuter
  * @program_name: Nom du programme shell
@@ -43,7 +79,6 @@ int wait_for_child(pid_t pid)
  */
 int execute_command(char *command, char *program_name)
 {
-	pid_t pid;
 	char **argv = NULL;
 	char *full_path = NULL;
 	int builtin_status;
@@ -79,33 +114,13 @@ int execute_command(char *command, char *program_name)
 	full_path = find_command(argv[0]);
 	if (!full_path)
 	{
-		dprintf(STDERR_FILENO, "./shell: No such file or directory\n");
+		dprintf(STDERR_FILENO, "%s: %s: command not found\n", program_name, argv[0]);
 		free_tokens(argv);
 		return (1);
 	}
 
-	/* Crée le processus enfant */
-	pid = create_process();
-	if (pid == -1)
-	{
-		free(full_path);
-		free_tokens(argv);
-		return (1);
-	}
-
-	if (pid == 0)
-	{
-		/* Processus enfant : exécute la commande */
-		execve(full_path, argv, environ);
-		/* Si on arrive ici, execve a échoué */
-		dprintf(STDERR_FILENO, "./shell: No such file or directory\n");
-		_exit(2);
-	}
-	else
-	{
-		/* Processus parent : attend l'enfant */
-		wait_for_child(pid);
-	}
+	/* Exécute la commande */
+	handle_command_execution(full_path, argv, program_name);
 
 	/* Nettoie la mémoire */
 	free(full_path);

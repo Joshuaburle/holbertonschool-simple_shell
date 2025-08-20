@@ -18,6 +18,31 @@ int file_exists(char *filepath)
 }
 
 /**
+ * search_in_path_directory - Cherche une commande dans un répertoire du PATH
+ * @dir: Répertoire à vérifier
+ * @cmd: Commande à chercher
+ * Return: Chemin complet si trouvé, NULL sinon
+ */
+char *search_in_path_directory(const char *dir, const char *cmd)
+{
+	char *full_path;
+
+	full_path = malloc(strlen(dir) + strlen(cmd) + 2);
+	if (!full_path)
+		return (NULL);
+
+	/* Construit le chemin complet */
+	sprintf(full_path, "%s/%s", dir, cmd);
+
+	/* Vérifie si le fichier existe et est exécutable */
+	if (file_exists(full_path))
+		return (full_path);
+
+	free(full_path);
+	return (NULL);
+}
+
+/**
  * find_command - Trouve le chemin complet d'une commande dans le PATH
  * @cmd: La commande à trouver
  * Return: Chemin complet si trouvé, NULL sinon
@@ -26,15 +51,17 @@ char *find_command(const char *cmd)
 {
 	char *path_env, *path_copy, *dir, *full_path;
 
-	/* Si c'est un chemin absolu, le retourne directement */
+	/* Si c'est un chemin absolu, vérifie s'il existe et est exécutable */
 	if ((cmd[0] == '/') || ((cmd[0] == '.') && (cmd[1] == '/')))
 	{
-		return (strdup(cmd));
+		if (file_exists((char *)cmd))
+			return (strdup(cmd));
+		return (NULL);
 	}
 
 	/* Récupère la variable PATH */
 	path_env = getenv("PATH");
-	if (!path_env)
+	if (!path_env || strlen(path_env) == 0)
 		return (NULL);
 
 	path_copy = strdup(path_env);
@@ -45,24 +72,13 @@ char *find_command(const char *cmd)
 	dir = strtok(path_copy, ":");
 	while (dir)
 	{
-		full_path = malloc(strlen(dir) + strlen(cmd) + 2);
-		if (!full_path)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-
-		/* Construit le chemin complet */
-		sprintf(full_path, "%s/%s", dir, cmd);
-
-		/* Vérifie si le fichier existe et est exécutable */
-		if (access(full_path, X_OK) == 0)
+		full_path = search_in_path_directory(dir, cmd);
+		if (full_path)
 		{
 			free(path_copy);
 			return (full_path);
 		}
 
-		free(full_path);
 		dir = strtok(NULL, ":");
 	}
 

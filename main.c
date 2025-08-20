@@ -28,13 +28,45 @@ void free_memory(char *line, char **args)
 }
 
 /**
+ * process_command - Traite une commande utilisateur
+ * @line: Ligne de commande
+ * Return: 1 pour continuer, 0 pour quitter
+ */
+int process_command(char *line)
+{
+	char **args = NULL;
+	int status = 1;
+
+	/* Ignore les lignes vides */
+	if (is_empty_or_whitespace(line))
+	{
+		free(line);
+		return (1);
+	}
+
+	/* Divise la ligne en arguments */
+	args = _split_line(line);
+	if (!args)
+	{
+		free(line);
+		return (1);
+	}
+
+	/* Exécute la commande */
+	status = execute_command(line, "hsh");
+
+	/* Nettoie la mémoire */
+	free_memory(line, args);
+	return (status);
+}
+
+/**
  * main - Point d'entrée principal du shell
  * Return: 0 en cas de succès
  */
 int main(void)
 {
 	char *line = NULL;
-	char **args = NULL;
 	int status = 1;
 
 	/* Configure la gestion de Ctrl+C */
@@ -56,32 +88,9 @@ int main(void)
 			break;
 		}
 
-		/* Ignore les lignes vides */
-		if (is_empty_or_whitespace(line))
-		{
-			free(line);
-			continue;
-		}
-
-		/* Divise la ligne en arguments */
-		args = _split_line(line);
-		if (!args)
-		{
-			free(line);
-			continue;
-		}
-
-		/* Exécute la commande */
-		status = execute_command(line, "shell");
-
-		/* Nettoie la mémoire */
-		free_memory(line, args);
+		/* Traite la commande */
+		status = process_command(line);
 		line = NULL;
-		args = NULL;
-
-		/* Sort si exit demandé */
-		if (status == 0)
-			break;
 	}
 
 	return (0);
