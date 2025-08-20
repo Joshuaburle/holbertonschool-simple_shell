@@ -1,6 +1,29 @@
 #include "shell.h"
 
 /**
+ * resize_tokens - Redimensionne le tableau de tokens
+ * @tokens: Tableau actuel
+ * @position: Position actuelle
+ * @bufsize: Nouvelle taille
+ * Return: Nouveau tableau ou NULL si erreur
+ */
+char **resize_tokens(char **tokens, int position, int bufsize)
+{
+	char **new_tokens;
+	int i;
+
+	new_tokens = realloc(tokens, bufsize * sizeof(char *));
+	if (!new_tokens)
+	{
+		for (i = 0; i < position; i++)
+			free(tokens[i]);
+		free(tokens);
+		return (NULL);
+	}
+	return (new_tokens);
+}
+
+/**
  * _split_line - Divise une ligne en tableau d'arguments
  * @line: La chaîne à diviser
  * Return: Tableau de tokens, ou NULL en cas d'échec
@@ -34,20 +57,10 @@ char **_split_line(char *line)
 		/* Agrandit le tableau si nécessaire */
 		if (position >= bufsize)
 		{
-			char **new_tokens;
-
 			bufsize += 64;
-			new_tokens = realloc(tokens, bufsize * sizeof(char *));
-			if (!new_tokens)
-			{
-				int i;
-
-				for (i = 0; i < position; i++)
-					free(tokens[i]);
-				free(tokens);
+			tokens = resize_tokens(tokens, position, bufsize);
+			if (!tokens)
 				return (NULL);
-			}
-			tokens = new_tokens;
 		}
 		token = strtok(NULL, " \t\r\n");
 	}

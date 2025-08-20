@@ -18,23 +18,28 @@ extern char **environ;  /* Tableau des variables d'environnement du système */
 /* ===== PROTOTYPES DES FONCTIONS ===== */
 
 /* === I/O ET PROMPT === */
-void display_prompt(void);                    /* Affiche l'invite #cisfun$ */
-char *read_line(void);                        /* Lit une ligne depuis stdin */
-int is_empty_or_whitespace(char *line);       /* Vérifie si ligne vide/espaces */
+void display_prompt(void);                    /* Affiche l'invite */
+char *read_line(void);                        /* Lit ligne stdin */
+int is_empty_or_whitespace(char *line);       /* Vérifie ligne vide */
 
 /* === PARSING DES COMMANDES === */
-char **_split_line(char *line);               /* Divise ligne en tableau d'arguments */
-void free_tokens(char **tokens);              /* Libère mémoire des tokens */
+char **_split_line(char *line);               /* Divise ligne */
+char **resize_tokens(char **tokens, int position, int bufsize); /* Resize */
+void free_tokens(char **tokens);              /* Libère tokens */
 
 /* === COMMANDES INTÉGRÉES === */
-void print_env(void);                         /* Affiche l'environnement */
+void print_env(void);                         /* Affiche env */
+int handle_builtin(char **argv, char *command_copy); /* Gère built-ins */
 
 /* === GESTION DU PATH ET EXÉCUTION === */
-char *find_command(const char *cmd);          /* Trouve chemin complet d'une commande */
-int file_exists(char *filepath);              /* Vérifie si fichier existe et exécutable */
-int execute_command(char *command, char *program_name); /* Exécute une commande */
+char *find_command(const char *cmd);          /* Trouve commande */
+int file_exists(char *filepath);              /* Vérifie existence */
+int execute_command(char *command, char *program_name); /* Exécute */
+int execute_fork(char *cmd_path, char **argv, char *cmd_copy, char *prog);
+int handle_command_not_found(char *program_name, char **argv, char *cmd_copy);
 
 /* === UTILITAIRES === */
+void write_error(char *prog, char *cmd, char *msg); /* Affiche erreur */
 void free_memory(char *line, char **args);   /* Libère mémoire allouée */
 
 #endif

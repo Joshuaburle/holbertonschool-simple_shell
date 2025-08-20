@@ -1,19 +1,6 @@
 #include "shell.h"
 
 /**
- * sigint_handler - Gère le signal Ctrl+C
- * @sig: Numéro du signal
- * Return: void
- */
-static void sigint_handler(int sig)
-{
-	(void)sig;
-	write(STDOUT_FILENO, "\n", 1);
-	if (isatty(STDIN_FILENO))
-		display_prompt();
-}
-
-/**
  * free_memory - Libère la mémoire allouée
  * @line: Ligne de commande
  * @args: Arguments de la commande
@@ -60,9 +47,6 @@ int main(void)
 	char *line = NULL;
 	int last_exit_code = 0;
 
-	/* Configure la gestion de Ctrl+C */
-	signal(SIGINT, sigint_handler);
-
 	/* Boucle principale du shell */
 	while (1)
 	{
@@ -87,6 +71,6 @@ int main(void)
 	/* In non-interactive mode, return the last command's exit code */
 	if (!isatty(STDIN_FILENO))
 		return (last_exit_code);
-	
+
 	return (0);
 }

@@ -3,7 +3,8 @@
 /**
  * file_exists - Vérifie si un fichier existe et est exécutable
  * @filepath: Chemin vers le fichier
- * Return: 1 si le fichier existe et est exécutable, 0 sinon, -1 si permission denied
+ * Return: 1 si le fichier existe et est exécutable, 0 sinon,
+ *         -1 si permission denied
  */
 int file_exists(char *filepath)
 {
@@ -37,7 +38,9 @@ char *search_in_path_directory(const char *dir, const char *cmd)
 		return (NULL);
 
 	/* Construit le chemin complet */
-	sprintf(full_path, "%s/%s", dir, cmd);
+	strcpy(full_path, dir);
+	strcat(full_path, "/");
+	strcat(full_path, cmd);
 
 	/* Vérifie si le fichier existe et est exécutable */
 	if (file_exists(full_path))
@@ -63,7 +66,8 @@ char *find_command(const char *cmd)
 		file_status = file_exists((char *)cmd);
 		if (file_status == 1)
 			return (strdup(cmd));
-		/* Return NULL pour les chemins absolus - l'erreur sera gérée dans execute.c */
+		/* Return NULL pour les chemins absolus */
+		/* L'erreur sera gérée dans execute.c */
 		return (NULL);
 	}
 

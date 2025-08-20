@@ -54,3 +54,18 @@ int is_empty_or_whitespace(char *line)
 	}
 	return (1);
 }
+
+/**
+ * print_env - Print environment variables
+ * Return: void
+ */
+void print_env(void)
+{
+	int i;
+
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		write(STDOUT_FILENO, environ[i], strlen(environ[i]));
+		write(STDOUT_FILENO, "\n", 1);
+	}
+}
