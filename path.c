@@ -68,7 +68,13 @@ char *find_command(const char *cmd)
 
 	/* Si la commande contient un slash, c'est un chemin */
 	if (strchr(cmd, '/') != NULL)
-		return (strdup(cmd));
+	{
+		/* Vérifier si le fichier existe et est exécutable */
+		if (access(cmd, X_OK) == 0)
+			return (strdup(cmd));
+		else
+			return (NULL); /* Le fichier n'existe pas ou n'est pas exécutable */
+	}
 
 	/* Récupération de la variable PATH */
 	path_env = _getenv("PATH");
