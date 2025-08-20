@@ -1,6 +1,10 @@
 #include "shell.h"
 
-/* Gère Ctrl+C - réaffiche le prompt */
+/**
+ * sigint_handler - Gère le signal Ctrl+C
+ * @sig: Numéro du signal
+ * Return: void
+ */
 static void sigint_handler(int sig)
 {
 	(void)sig;
@@ -9,7 +13,12 @@ static void sigint_handler(int sig)
 		display_prompt();
 }
 
-/* Libère la mémoire allouée */
+/**
+ * free_memory - Libère la mémoire allouée
+ * @line: Ligne de commande
+ * @args: Arguments de la commande
+ * Return: void
+ */
 void free_memory(char *line, char **args)
 {
 	if (line)
@@ -18,7 +27,10 @@ void free_memory(char *line, char **args)
 		free_tokens(args);
 }
 
-/* Point d'entrée principal du shell */
+/**
+ * main - Point d'entrée principal du shell
+ * Return: 0 en cas de succès
+ */
 int main(void)
 {
 	char *line = NULL;

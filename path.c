@@ -1,6 +1,10 @@
 #include "shell.h"
 
-/* Vérifie si un fichier existe et est exécutable */
+/**
+ * file_exists - Vérifie si un fichier existe et est exécutable
+ * @filepath: Chemin vers le fichier
+ * Return: 1 si le fichier existe et est exécutable, 0 sinon
+ */
 int file_exists(char *filepath)
 {
 	struct stat st;
@@ -13,7 +17,11 @@ int file_exists(char *filepath)
 	return (0);
 }
 
-/* Trouve le chemin complet d'une commande dans le PATH */
+/**
+ * find_command - Trouve le chemin complet d'une commande dans le PATH
+ * @cmd: La commande à trouver
+ * Return: Chemin complet si trouvé, NULL sinon
+ */
 char *find_command(const char *cmd)
 {
 	char *path_env, *path_copy, *dir, *full_path;

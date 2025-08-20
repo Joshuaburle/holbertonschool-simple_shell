@@ -1,6 +1,10 @@
 #include "shell.h"
 
-/* Vérifie si c'est une commande intégrée (exit/env) */
+/**
+ * check_builtin - Vérifie si c'est une commande intégrée (exit/env)
+ * @args: Tableau d'arguments de la commande
+ * Return: 0 si pas intégrée, 1 si exécutée, -1 si exit
+ */
 int check_builtin(char **args)
 {
 	if (args == NULL || args[0] == NULL)
@@ -19,7 +23,10 @@ int check_builtin(char **args)
 	return (0); /* Pas une commande intégrée */
 }
 
-/* Affiche toutes les variables d'environnement */
+/**
+ * print_env - Affiche toutes les variables d'environnement
+ * Return: void
+ */
 void print_env(void)
 {
 	int i;

@@ -1,7 +1,7 @@
 #include "shell.h"
 
 /**
- * _split_line - Divise une chaîne en tableau de tokens
+ * _split_line - Divise une ligne en tableau d'arguments
  * @line: La chaîne à diviser
  * Return: Tableau de tokens, ou NULL en cas d'échec
  */
@@ -56,7 +56,11 @@ char **_split_line(char *line)
 	return (tokens);
 }
 
-/* Libère la mémoire des tokens */
+/**
+ * free_tokens - Libère la mémoire des tokens
+ * @tokens: Tableau de tokens à libérer
+ * Return: void
+ */
 void free_tokens(char **tokens)
 {
 	int i;

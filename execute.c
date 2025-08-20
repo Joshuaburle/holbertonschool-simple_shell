@@ -1,6 +1,9 @@
 #include "shell.h"
 
-/* Crée un nouveau processus enfant */
+/**
+ * create_process - Crée un nouveau processus enfant
+ * Return: PID du processus créé, ou -1 en cas d'échec
+ */
 pid_t create_process(void)
 {
 	pid_t pid;
@@ -14,7 +17,11 @@ pid_t create_process(void)
 	return (pid);
 }
 
-/* Attend que le processus enfant se termine */
+/**
+ * wait_for_child - Attend que le processus enfant se termine
+ * @pid: PID du processus à attendre
+ * Return: 0 en cas de succès, -1 en cas d'échec
+ */
 int wait_for_child(pid_t pid)
 {
 	int status;
@@ -28,7 +35,12 @@ int wait_for_child(pid_t pid)
 	return (0);
 }
 
-/* Exécute une commande ou une commande intégrée */
+/**
+ * execute_command - Exécute une commande ou une commande intégrée
+ * @command: La commande à exécuter
+ * @program_name: Nom du programme shell
+ * Return: 1 pour continuer, 0 pour quitter
+ */
 int execute_command(char *command, char *program_name)
 {
 	pid_t pid;

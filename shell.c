@@ -1,13 +1,19 @@
 #include "shell.h"
 
-/* Affiche l'invite du shell */
+/**
+ * display_prompt - Affiche l'invite du shell
+ * Return: void
+ */
 void display_prompt(void)
 {
 	write(STDOUT_FILENO, "#cisfun$ ", 9);
 	fflush(stdout);
 }
 
-/* Lit une ligne depuis stdin */
+/**
+ * read_line - Lit une ligne depuis stdin
+ * Return: Pointeur vers la ligne, ou NULL sur EOF
+ */
 char *read_line(void)
 {
 	char *line = NULL;
@@ -28,7 +34,11 @@ char *read_line(void)
 	return (line);
 }
 
-/* Vérifie si la ligne est vide ou juste des espaces */
+/**
+ * is_empty_or_whitespace - Vérifie si la ligne est vide ou juste des espaces
+ * @line: La ligne à vérifier
+ * Return: 1 si vide/espaces, 0 sinon
+ */
 int is_empty_or_whitespace(char *line)
 {
 	int i;
