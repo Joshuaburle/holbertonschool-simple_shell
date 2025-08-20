@@ -8,18 +8,15 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <stddef.h>
 
-/* Function prototypes */
+/* Prototypes des fonctions */
 void display_prompt(void);
 char *read_line(void);
-int is_empty_or_whitespace(char *line);
+char **split(char *line);
 int execute_command(char *command, char *program_name);
-char **_split_line(char *line);
-char *find_command(char *command);
 void sigint_handler(int sig);
 
-/* Global variables */
+/* Variables globales */
 extern char **environ;
 
 #endif
