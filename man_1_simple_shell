@@ -1,1 +1,207 @@
-# a venir a venir 
+.TH HSH 1 "August 2025" "Version 1.0" "Simple Shell Manual"
+
+.SH NAME
+hsh \- simple UNIX command interpreter
+
+.SH SYNOPSIS
+.B hsh
+.RI [ options ]
+.RI [ file ]
+
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command language interpreter that executes commands read from the standard input or from a file. This shell is a simplified version of the Bourne shell (sh) and is designed for educational purposes as part of the Holberton School curriculum.
+
+When
+.B hsh
+is invoked, it reads and executes commands from its input. If invoked with arguments, the first argument is taken as the name of a file from which to read commands. Otherwise,
+.B hsh
+reads from the standard input.
+
+.SH INVOCATION
+The shell can be invoked in two modes:
+
+.SS Interactive mode
+When 
+.B hsh
+is invoked without arguments and its input and output are connected to a terminal, it operates in interactive mode. In this mode, it displays a prompt 
+.RB ( "#cisfun$ " )
+and waits for user input.
+
+.SS Non-interactive mode
+When 
+.B hsh
+is invoked with a command string or its input is redirected, it operates in non-interactive mode. The shell reads commands from its input and executes them.
+
+.SH COMMAND EXECUTION
+Commands are executed by searching for the command name in the directories listed in the PATH environment variable. If the command contains a slash 
+.RB ( / ),
+it is executed directly without PATH search.
+
+The shell performs the following steps to execute a command:
+.IP 1. 4
+Parse the input line into tokens using space, tab, and newline as delimiters
+.IP 2. 4
+Check if the first token is a built-in command
+.IP 3. 4
+If not a built-in, search for the command in PATH directories
+.IP 4. 4
+Fork a new process and execute the command using 
+.BR execve (2)
+.IP 5. 4
+Wait for the command to complete using 
+.BR wait (2)
+
+.SH BUILT-IN COMMANDS
+The following built-in commands are supported:
+
+.TP
+.B exit
+Exit the shell with status 0. This command does not accept any arguments.
+
+.TP
+.B env
+Print the current environment variables to standard output, one per line, in the format
+.IR NAME = VALUE .
+
+.SH ENVIRONMENT
+.B hsh
+uses the following environment variables:
+
+.TP
+.B PATH
+A colon-separated list of directories in which to search for commands. If PATH is unset or empty, commands must be specified with their full path.
+
+.TP
+.B HOME
+The home directory of the current user.
+
+.TP
+.B PWD
+The current working directory.
+
+.SH EXIT STATUS
+.B hsh
+exits with the status of the last command executed. If no command is executed, it exits with status 0.
+
+Built-in commands return:
+.RS
+.IP \(bu 2
+0 on success
+.IP \(bu 2
+1 on error
+.RE
+
+External commands return their own exit status as defined by the executed program.
+
+.SH EXAMPLES
+.SS Interactive mode
+.nf
+$ ./hsh
+#cisfun$ /bin/ls
+AUTHORS  README.md  hsh  main.c  shell.c  shell.h
+#cisfun$ ls -l
+total 32
+-rw-r--r-- 1 user user 1234 Aug 20 10:00 README.md
+#cisfun$ pwd
+/home/user/simple_shell
+#cisfun$ env | grep PATH
+PATH=/usr/local/bin:/usr/bin:/bin
+#cisfun$ exit
+$
+.fi
+
+.SS Non-interactive mode
+.nf
+$ echo "/bin/ls" | ./hsh
+AUTHORS  README.md  hsh  main.c  shell.c  shell.h
+
+$ echo "ls -la" | ./hsh
+total 32
+drwxr-xr-x 2 user user 4096 Aug 20 10:00 .
+drwxr-xr-x 3 user user 4096 Aug 20 09:30 ..
+-rw-r--r-- 1 user user  165 Aug 20 10:00 AUTHORS
+
+$ echo "pwd" | ./hsh
+/home/user/simple_shell
+.fi
+
+.SH ERROR HANDLING
+When a command is not found,
+.B hsh
+prints an error message to standard error in the format:
+.PP
+.IR program_name ": 1: " command_name ": not found"
+.PP
+and continues execution.
+
+.SH SIGNALS
+.B hsh
+handles the following signals:
+.TP
+.B SIGINT
+(Ctrl+C) In interactive mode, displays a new prompt on a new line. In non-interactive mode, the shell exits.
+
+.SH FILES
+.TP
+.I /bin/sh
+The standard shell, used for comparison
+.TP
+.I ~/.bashrc
+User's individual per-interactive-invocation startup file (not used by hsh)
+
+.SH CONFORMING TO
+This implementation follows basic POSIX shell conventions where applicable, but is a simplified educational version.
+
+.SH BUGS
+.IP \(bu 2
+Commands with quotes are not properly handled
+.IP \(bu 2
+Complex command line parsing is not supported
+.IP \(bu 2
+Error messages may differ from standard shells
+
+Report bugs to the authors at the email addresses listed below.
+
+.SH LIMITATIONS
+This shell is a simplified implementation and does not support many features of standard shells such as:
+.RS
+.IP \(bu 2
+Command history and editing
+.IP \(bu 2
+Job control (background processes, job suspension)
+.IP \(bu 2
+Aliases and functions
+.IP \(bu 2
+Variable expansion and substitution
+.IP \(bu 2
+Pipes and redirections (|, >, <, >>)
+.IP \(bu 2
+Globbing (wildcard expansion with *, ?, [])
+.IP \(bu 2
+Command substitution
+.IP \(bu 2
+Conditional execution (&&, ||)
+.RE
+
+.SH AUTHOR
+Written by Joshua Burle <joshua.burle@holbertonschool.com> and Mohamed Jebabli <mohamed.jebabli@holbertonschool.com> for Holberton School.
+
+.SH SEE ALSO
+.BR bash (1),
+.BR sh (1),
+.BR dash (1),
+.BR execve (2),
+.BR fork (2),
+.BR wait (2),
+.BR access (2),
+.BR getenv (3)
+
+.SH COPYRIGHT
+This is free software developed for educational purposes. You are free to study, modify, and distribute it under the terms of your educational institution.
+
+.SH VERSION
+Version 1.0, August 2025
+
+.SH HISTORY
+This simple shell was developed as part of the Holberton School low-level programming curriculum in August 2025. It represents a foundational exercise in system programming, process management, and UNIX command interpretation.
