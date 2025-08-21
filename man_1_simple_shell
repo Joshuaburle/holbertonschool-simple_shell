@@ -1,21 +1,21 @@
-.TH HSH 1 "August 2025" "Version 1.0" "Simple Shell Manual"
+.TH SHELL 1 "August 2025" "Version 1.0" "Simple Shell Manual"
 
 .SH NAME
-hsh \- simple UNIX command interpreter
+shell \- simple UNIX command interpreter
 
 .SH SYNOPSIS
-.B hsh
+.B shell
 .RI [ options ]
 .RI [ file ]
 
 .SH DESCRIPTION
-.B hsh
+.B shell
 is a simple UNIX command language interpreter that executes commands read from the standard input or from a file. This shell is a simplified version of the Bourne shell (sh) and is designed for educational purposes as part of the Holberton School curriculum.
 
 When
-.B hsh
+.B shell
 is invoked, it reads and executes commands from its input. If invoked with arguments, the first argument is taken as the name of a file from which to read commands. Otherwise,
-.B hsh
+.B shell
 reads from the standard input.
 
 .SH INVOCATION
@@ -23,20 +23,21 @@ The shell can be invoked in two modes:
 
 .SS Interactive mode
 When 
-.B hsh
+.B shell
 is invoked without arguments and its input and output are connected to a terminal, it operates in interactive mode. In this mode, it displays a prompt 
 .RB ( "#cisfun$ " )
 and waits for user input.
 
 .SS Non-interactive mode
 When 
-.B hsh
+.B shell
 is invoked with a command string or its input is redirected, it operates in non-interactive mode. The shell reads commands from its input and executes them.
 
 .SH COMMAND EXECUTION
 Commands are executed by searching for the command name in the directories listed in the PATH environment variable. If the command contains a slash 
 .RB ( / ),
-it is executed directly without PATH search.
+it is executed directly after validation with 
+.BR access (2).
 
 The shell performs the following steps to execute a command:
 .IP 1. 4
@@ -44,10 +45,12 @@ Parse the input line into tokens using space, tab, and newline as delimiters
 .IP 2. 4
 Check if the first token is a built-in command
 .IP 3. 4
-If not a built-in, search for the command in PATH directories
+If not a built-in, search for the command in PATH directories or validate absolute/relative paths
 .IP 4. 4
 Fork a new process and execute the command using 
 .BR execve (2)
+.IP 5. 4
+Wait for child process completion and collect exit status
 .IP 5. 4
 Wait for the command to complete using 
 .BR wait (2)
@@ -57,7 +60,9 @@ The following built-in commands are supported:
 
 .TP
 .B exit
-Exit the shell with status 0. This command does not accept any arguments.
+.TP
+.B exit \fR[\fIstatus\fR]
+Exit the shell with the specified status. If no status is provided, exits with the status of the last executed command. The status must be a numeric value.
 
 .TP
 .B env
@@ -65,7 +70,7 @@ Print the current environment variables to standard output, one per line, in the
 .IR NAME = VALUE .
 
 .SH ENVIRONMENT
-.B hsh
+.B shell
 uses the following environment variables:
 
 .TP
@@ -81,18 +86,30 @@ The home directory of the current user.
 The current working directory.
 
 .SH EXIT STATUS
-.B hsh
+.B shell
 exits with the status of the last command executed. If no command is executed, it exits with status 0.
 
 Built-in commands return:
 .RS
 .IP \(bu 2
-0 on success
+0 on success for env command
 .IP \(bu 2
-1 on error
+Specified exit code for exit command (0-255)
+.IP \(bu 2
+2 for invalid exit arguments
 .RE
 
-External commands return their own exit status as defined by the executed program.
+External commands return their own exit status as defined by the executed program:
+.RS
+.IP \(bu 2
+0 on success
+.IP \(bu 2
+127 for command not found
+.IP \(bu 2
+126 for permission denied
+.IP \(bu 2
+Other values as defined by the command
+.RE
 
 .SH EXAMPLES
 .SS Interactive mode

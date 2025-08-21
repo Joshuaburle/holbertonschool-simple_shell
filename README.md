@@ -18,18 +18,21 @@ A custom implementation of a simple UNIX shell in C language, developed as part 
 
 ## 🎯 Description
 
-This project implements a simple UNIX shell (command interpreter) capable of executing programs, managing built-in commands, and navigating through the file system. The shell supports command execution via PATH, argument handling, and essential built-in commands.
+This project implements a simple UNIX shell (command interpreter) capable of executing programs, managing built-in commands, and navigating through the file system. The shell supports command execution via PATH, argument handling, essential built-in commands, and proper exit code management.
 
 ## ✨ Features
 
 - ✅ Interactive and non-interactive modes
-- ✅ Command execution with PATH search
-- ✅ Command argument support
+- ✅ Command execution with PATH search and validation
+- ✅ Command argument support with proper parsing
 - ✅ Built-in commands (`exit`, `env`)
-- ✅ Robust error handling
+- ✅ Robust error handling with appropriate exit codes
 - ✅ Custom prompt (#cisfun$ )
-- ✅ Proper memory management
+- ✅ Proper memory management (no leaks)
 - ✅ Betty coding standards compliant
+- ✅ Support for absolute and relative paths
+- ✅ Exit code propagation and management
+- ✅ Custom environment variable handling
 
 ## 🚀 Installation
 
@@ -41,16 +44,16 @@ git clone https://github.com/Joshuaburle/holbertonschool-simple_shell.git
 cd holbertonschool-simple_shell
 
 # Compile the project
-gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
+gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o shell
 ```
 
 ## 💻 Usage
 
 ### Interactive mode
 ```bash
-$ ./hsh
+$ ./shell
 #cisfun$ /bin/ls
-AUTHORS  README.md  execute.c  hsh  main.c  shell.c  shell.h
+AUTHORS  README.md  execute.c  shell  main.c  shell.c  shell.h
 #cisfun$ ls -l
 total 32
 -rw-r--r-- 1 user user  165 Aug 20 10:00 AUTHORS
@@ -61,12 +64,16 @@ $
 
 ### Non-interactive mode
 ```bash
-$ echo "/bin/ls" | ./hsh
-AUTHORS  README.md  execute.c  hsh  main.c  shell.c  shell.h
+$ echo "/bin/ls" | ./shell
+AUTHORS  README.md  execute.c  shell  main.c  shell.c  shell.h
 
-$ echo "ls -l /tmp" | ./hsh
+$ echo "ls -l /tmp" | ./shell
 total 8
 drwx------ 2 user user 4096 Aug 20 09:00 temp_folder
+
+$ printf "echo hello\nexit 5\n" | ./shell; echo "Exit code: $?"
+hello
+Exit code: 5
 ```
 
 ## 📝 Supported Commands
@@ -75,26 +82,27 @@ drwx------ 2 user user 4096 Aug 20 09:00 temp_folder
 All commands available in the system PATH:
 - `ls`, `cat`, `grep`, `ps`, `who`, etc.
 - Commands with absolute paths: `/bin/ls`, `/usr/bin/env`
+- Commands with relative paths: `./script.sh`
 - Commands with arguments: `ls -la`, `grep pattern file`
 
 ### Built-in commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `exit` | Exit the shell | `exit` |
-| `env` | Display environment variables | `env` |
+| Command | Description | Example | Exit Code |
+|---------|-------------|---------|-----------|
+| `exit` | Exit the shell | `exit` | Last command's exit code |
+| `exit [n]` | Exit with specific code | `exit 5` | Specified code (n) |
+| `env` | Display environment variables | `env` | 0 on success |
 
 ## 📁 Project Structure
 
 ```
 holbertonschool-simple_shell/
-├── shell.h              # Main header file
-├── main.c               # Program entry point
-├── shell.c              # User interface functions
-├── execute.c            # Command execution logic
-├── builtins.c           # Built-in commands implementation
-├── path.c               # PATH search management
-├── split.c              # Argument parsing
+├── shell.h              # Main header file with prototypes
+├── main.c               # Program entry point and main loop
+├── shell.c              # User interface and I/O functions
+├── execute.c            # Command execution and built-ins logic
+├── path.c               # PATH search and command resolution
+├── split.c              # Command line argument parsing
 ├── man_1_simple_shell   # Manual page
 ├── AUTHORS              # Contributors list
 └── README.md            # This file
@@ -162,7 +170,7 @@ $ echo "exit" | ./hsh
 ### Example 1: Simple commands
 ```bash
 #cisfun$ ls
-AUTHORS  README.md  execute.c  hsh  main.c  shell.c  shell.h
+AUTHORS  README.md  execute.c  shell  main.c  shell.c  shell.h
 #cisfun$ pwd
 /home/user/holbertonschool-simple_shell
 #cisfun$ whoami
@@ -178,12 +186,35 @@ drwxr-xr-x 5 user user  4096 Aug 20 09:30 ..
 -rw-r--r-- 1 user user   165 Aug 20 10:00 AUTHORS
 ```
 
-### Example 3: Absolute paths
+### Example 3: Absolute and relative paths
 ```bash
 #cisfun$ /bin/echo "Hello World"
 Hello World
-#cisfun$ /usr/bin/env | grep PATH
-PATH=/usr/local/bin:/usr/bin:/bin
+#cisfun$ ./shell
+#cisfun$ echo "Nested shell"
+Nested shell
+#cisfun$ exit
+```
+
+### Example 4: Built-in commands
+```bash
+#cisfun$ env | head -3
+PATH=/usr/bin:/bin
+HOME=/home/user
+USER=user
+#cisfun$ exit 42
+$ echo $?
+42
+```
+
+### Example 5: Error handling
+```bash
+#cisfun$ invalidcommand
+hsh: 1: invalidcommand: command not found
+#cisfun$ /bin/nonexistent
+hsh: 1: /bin/nonexistent: No such file or directory
+#cisfun$ ./nonexecutable
+hsh: 1: ./nonexecutable: Permission denied
 ```
 
 ## 🛠️ Internal Functioning
