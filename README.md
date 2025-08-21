@@ -270,7 +270,17 @@ The manual page includes detailed information about:
 - Environment variables usage
 - Examples for both interactive and non-interactive modes
 - Error handling and exit status codes
-- Known limitations and bugs
+
+### Manual Page Preview
+
+![Man Page 1/3](image/Man%20page%201-3.png)
+*Figure 1: Manual page header and description*
+
+![Man Page 2/3](image/Man%20page%202-3.png)
+*Figure 2: Built-in commands and examples*
+
+![Man Page 3/3](image/Man%20page%203-3.png)
+*Figure 3: Error handling and author information*
 
 ---
 
