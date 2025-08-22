@@ -243,6 +243,21 @@ hsh: 1: ./nonexecutable: Permission denied
 - Systematic resource liberation
 - No memory leaks
 
+## 📊 Flowchart
+
+The following flowchart illustrates the shell's execution flow and decision-making process:
+
+![Shell Flowchart](image/Shell%20Flowchart.png)
+*Figure 4: Simple shell execution flowchart showing the complete process from initialization to command execution*
+
+This flowchart demonstrates:
+- **Initialization Phase**: Shell startup and mode detection
+- **Main Loop**: Continuous prompt and input handling
+- **Command Processing**: Parsing and validation logic
+- **Execution Path**: Built-in vs external command handling
+- **Error Management**: Comprehensive error handling flows
+- **Exit Conditions**: Proper shell termination
+
 ## 🤝 Contribution
 
 This project is part of the Holberton School curriculum. Contributions are limited to project students.
