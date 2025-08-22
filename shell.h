@@ -10,7 +10,7 @@
 #include <sys/wait.h>   /* wait, waitpid */
 #include <sys/stat.h>   /* stat, S_ISREG */
 #include <signal.h>     /* signal, SIGINT */
-#include <errno.h>      /* errno */
+
 
 /* ===== VARIABLES GLOBALES ===== */
 extern char **environ;  /* Tableau des variables d'environnement du système */
