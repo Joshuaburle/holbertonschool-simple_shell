@@ -9,6 +9,7 @@
 
 extern char **environ;
 
-int main(int ac, char **av);
+void print_not_found(char *av0, unsigned int count, char *cmd);
+void execute_command(char *cmd, char *av0, unsigned int count);
 
 #endif
