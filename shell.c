@@ -1,8 +1,7 @@
 #include "shell.h"
-#include <string.h>
 
 /**
- * main - Simple shell 0.2
+ * main - Simple shell 0.3 (arguments + PATH)
  * @ac: argument count (unused)
  * @av: argument vector
  *
@@ -17,6 +16,7 @@ int main(int ac, char **av)
 	int last_status = 0;
 	int interactive;
 	char **argv_exec;
+	char *cmd_path;
 
 	(void)ac;
 	interactive = isatty(STDIN_FILENO);
@@ -39,7 +39,18 @@ int main(int ac, char **av)
 			continue;
 
 		count++;
+
+		cmd_path = resolve_cmd(argv_exec[0], av[0], count, &last_status);
+		if (cmd_path == NULL)
+		{
+			free_args(argv_exec);
+			continue;
+		}
+
+		argv_exec[0] = cmd_path;
 		last_status = execute_command(argv_exec, av[0], count);
+
+		free(cmd_path);
 		free_args(argv_exec);
 	}
 
