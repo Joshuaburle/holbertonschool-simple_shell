@@ -10,6 +10,8 @@
 extern char **environ;
 
 void print_not_found(char *av0, unsigned int count, char *cmd);
+void print_perm_denied(char *av0, unsigned int count, char *cmd);
+void child_exec(char *cmd, char *av0, unsigned int count);
 int execute_command(char *cmd, char *av0, unsigned int count);
 
 #endif /* SHELL_H */

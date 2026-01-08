@@ -14,6 +14,47 @@ void print_not_found(char *av0, unsigned int count, char *cmd)
 }
 
 /**
+ * print_perm_denied - prints permission denied like /bin/sh
+ * @av0: program name
+ * @count: command number
+ * @cmd: command name
+ */
+void print_perm_denied(char *av0, unsigned int count, char *cmd)
+{
+	fprintf(stderr, "%s: %u: %s: Permission denied\n", av0, count, cmd);
+}
+
+/**
+ * child_exec - executes command in child process
+ * @cmd: command to execute
+ * @av0: program name
+ * @count: command number
+ */
+void child_exec(char *cmd, char *av0, unsigned int count)
+{
+	char *argv_exec[2];
+
+	argv_exec[0] = cmd;
+	argv_exec[1] = NULL;
+
+	execve(cmd, argv_exec, environ);
+
+	if (errno == ENOENT)
+	{
+		print_not_found(av0, count, cmd);
+		_exit(127);
+	}
+	if (errno == EACCES)
+	{
+		print_perm_denied(av0, count, cmd);
+		_exit(126);
+	}
+
+	perror(av0);
+	_exit(1);
+}
+
+/**
  * execute_command - creates a process and executes a command
  * @cmd: command to execute
  * @av0: program name
@@ -25,10 +66,6 @@ int execute_command(char *cmd, char *av0, unsigned int count)
 {
 	pid_t pid;
 	int status;
-	char *argv_exec[2];
-
-	argv_exec[0] = cmd;
-	argv_exec[1] = NULL;
 
 	pid = fork();
 	if (pid == -1)
@@ -38,16 +75,7 @@ int execute_command(char *cmd, char *av0, unsigned int count)
 	}
 
 	if (pid == 0)
-	{
-		execve(cmd, argv_exec, environ);
-
-		if (errno == ENOENT)
-			print_not_found(av0, count, cmd);
-		else
-			perror(av0);
-
-		_exit(127);
-	}
+		child_exec(cmd, av0, count);
 
 	waitpid(pid, &status, 0);
 
@@ -71,18 +99,20 @@ int main(int ac, char **av)
 	ssize_t nread;
 	unsigned int count = 0;
 	int last_status = 0;
+	int interactive;
 
 	(void)ac;
+	interactive = isatty(STDIN_FILENO);
 
 	while (1)
 	{
-		if (isatty(STDIN_FILENO))
+		if (interactive)
 			write(STDOUT_FILENO, "($) ", 4);
 
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 		{
-			if (isatty(STDIN_FILENO))
+			if (interactive)
 				write(STDOUT_FILENO, "\n", 1);
 			break;
 		}
