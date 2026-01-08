@@ -18,8 +18,10 @@ void print_not_found(char *av0, unsigned int count, char *cmd)
  * @cmd: command to execute
  * @av0: program name
  * @count: command number
+ *
+ * Return: exit status of the executed command
  */
-void execute_command(char *cmd, char *av0, unsigned int count)
+int execute_command(char *cmd, char *av0, unsigned int count)
 {
 	pid_t pid;
 	int status;
@@ -29,6 +31,12 @@ void execute_command(char *cmd, char *av0, unsigned int count)
 	argv_exec[1] = NULL;
 
 	pid = fork();
+	if (pid == -1)
+	{
+		perror(av0);
+		return (1);
+	}
+
 	if (pid == 0)
 	{
 		execve(cmd, argv_exec, environ);
@@ -40,10 +48,13 @@ void execute_command(char *cmd, char *av0, unsigned int count)
 
 		_exit(127);
 	}
-	else
-	{
-		waitpid(pid, &status, 0);
-	}
+
+	waitpid(pid, &status, 0);
+
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+
+	return (1);
 }
 
 /**
@@ -51,7 +62,7 @@ void execute_command(char *cmd, char *av0, unsigned int count)
  * @ac: argument count (unused)
  * @av: argument vector
  *
- * Return: Always 0
+ * Return: exit status of the last executed command
  */
 int main(int ac, char **av)
 {
@@ -59,6 +70,7 @@ int main(int ac, char **av)
 	size_t len = 0;
 	ssize_t nread;
 	unsigned int count = 0;
+	int last_status = 0;
 
 	(void)ac;
 
@@ -80,9 +92,9 @@ int main(int ac, char **av)
 			continue;
 
 		count++;
-		execute_command(cmd, av[0], count);
+		last_status = execute_command(cmd, av[0], count);
 	}
 
 	free(line);
-	return (0);
+	return (last_status);
 }
