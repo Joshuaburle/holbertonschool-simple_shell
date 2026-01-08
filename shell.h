@@ -7,11 +7,19 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define MAX_ARGS 64
+
 extern char **environ;
 
+/* parsing */
+char **parse_args(char *line);
+void free_args(char **argv);
+
+/* execution */
+int execute_command(char **argv, char *av0, unsigned int count);
+
+/* errors */
 void print_not_found(char *av0, unsigned int count, char *cmd);
 void print_perm_denied(char *av0, unsigned int count, char *cmd);
-void child_exec(char *cmd, char *av0, unsigned int count);
-int execute_command(char *cmd, char *av0, unsigned int count);
 
 #endif /* SHELL_H */
