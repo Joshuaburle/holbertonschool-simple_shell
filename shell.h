@@ -22,4 +22,7 @@ int execute_command(char **argv, char *av0, unsigned int count);
 void print_not_found(char *av0, unsigned int count, char *cmd);
 void print_perm_denied(char *av0, unsigned int count, char *cmd);
 
+/* PATH */
+char *resolve_cmd(char *cmd, char *av0, unsigned int count, int *err_status);
+
 #endif /* SHELL_H */
