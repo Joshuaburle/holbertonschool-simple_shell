@@ -23,10 +23,11 @@ int handle_exit(char **argv, char *line, int last_status)
 /**
  * handle_env - print current environment
  * @argv: argument vector
+ * @last_status: pointer to last status (set to 0 on success)
  *
  * Return: 1 if env was handled, 0 otherwise
  */
-int handle_env(char **argv)
+int handle_env(char **argv, int *last_status)
 {
 	int i;
 
@@ -37,6 +38,7 @@ int handle_env(char **argv)
 			write(STDOUT_FILENO, environ[i], strlen(environ[i]));
 			write(STDOUT_FILENO, "\n", 1);
 		}
+		*last_status = 0;
 		return (1);
 	}
 	return (0);

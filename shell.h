@@ -27,7 +27,7 @@ void print_perm_denied(char *av0, unsigned int count, char *cmd);
 
 /* builtins */
 int handle_exit(char **argv, char *line, int last_status);
-int handle_env(char **argv);
+int handle_env(char **argv, int *last_status);
 
 /* loop */
 int process_line(char *line, char **av, unsigned int *count, int *last_status);

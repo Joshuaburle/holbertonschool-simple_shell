@@ -21,7 +21,7 @@ int process_line(char *line, char **av, unsigned int *count, int *last_status)
 	if (handle_exit(argv_exec, line, *last_status))
 		return (1);
 
-	if (handle_env(argv_exec))
+	if (handle_env(argv_exec, last_status))
 	{
 		free_args(argv_exec);
 		return (0);
