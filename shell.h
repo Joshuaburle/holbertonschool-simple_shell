@@ -25,4 +25,10 @@ void print_perm_denied(char *av0, unsigned int count, char *cmd);
 /* PATH */
 char *resolve_cmd(char *cmd, char *av0, unsigned int count, int *err_status);
 
+/* exit */
+int handle_exit(char **argv, char *line, int last_status);
+int process_line(char *line, char **av, unsigned int *count, int *last_status);
+int shell_loop(char **av);
+
+
 #endif /* SHELL_H */
