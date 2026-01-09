@@ -1,24 +1,4 @@
 #include "shell.h"
-#include <string.h>
-
-/**
- * handle_exit - handle exit builtin
- * @argv: argument vector
- * @line: input line buffer
- * @last_status: last command exit status
- *
- * Return: 1 if shell should exit, 0 otherwise
- */
-int handle_exit(char **argv, char *line, int last_status)
-{
-	if (argv[0] && strcmp(argv[0], "exit") == 0)
-	{
-		free_args(argv);
-		free(line);
-		exit(last_status);
-	}
-	return (0);
-}
 
 /**
  * process_line - parse and execute a single command line
@@ -41,6 +21,12 @@ int process_line(char *line, char **av, unsigned int *count, int *last_status)
 	if (handle_exit(argv_exec, line, *last_status))
 		return (1);
 
+	if (handle_env(argv_exec))
+	{
+		free_args(argv_exec);
+		return (0);
+	}
+
 	(*count)++;
 	cmd_path = resolve_cmd(argv_exec[0], av[0], *count, last_status);
 	if (cmd_path != NULL)
@@ -49,8 +35,8 @@ int process_line(char *line, char **av, unsigned int *count, int *last_status)
 		*last_status = execute_command(argv_exec, av[0], *count);
 		free(cmd_path);
 	}
-	free_args(argv_exec);
 
+	free_args(argv_exec);
 	return (0);
 }
 
