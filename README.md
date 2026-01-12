@@ -1,4 +1,3 @@
-gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 echo "ls" | ./hsh
 echo "pwd" | ./hsh
 printf "ls\nwhoami\n" | ./hsh
@@ -93,7 +92,7 @@ The repository contains a flowchart illustrating the shell's process flow. See t
 
 A manual page is included as `man_1_simple_shell`. A visual preview is provided in `img/man page.png`:
 
-![Man page preview](img/man page.png)
+![Man page preview](img/man-page.png)
 
 View the manual page using:
 
