@@ -1,0 +1,120 @@
+HSH(1)                                User Commands                                HSH(1)
+
+NAME
+       hsh - simple UNIX command interpreter
+
+SYNOPSIS
+       ./hsh
+
+       echo "command" | ./hsh
+
+       cat file | ./hsh
+
+DESCRIPTION
+       hsh  is a simple UNIX command line interpreter written in C as part of the
+       Holberton School curriculum. It provides a minimal set of features similar
+       to sh(1), allowing users to execute programs from the system.
+
+       The shell supports both interactive and non-interactive modes, PATH-based
+       command resolution, and a small set of built-in commands.
+
+MODES OF OPERATION
+       Interactive mode
+              Runs when standard input is connected to a terminal. The shell displays
+              the prompt:
+
+                  ($)
+
+              Then waits for the user to type a command followed by a newline.
+
+       Non-interactive mode
+              Runs when standard input is redirected or piped into the shell. Commands
+              are read and executed sequentially without printing a prompt.
+
+BUILT-IN COMMANDS
+       exit
+              Exit the shell. This built-in takes no arguments. The shell exits with
+              the status of the last executed command.
+
+       env
+              Print the current environment variables, one per line, in the format:
+
+                  NAME=value
+
+COMMAND EXECUTION
+       The shell executes commands according to the following logic:
+
+       1. Read one line from standard input using getline(3).
+       2. If end-of-file is reached (Ctrl+D in interactive mode, or end of input in
+          non-interactive mode), the shell exits.
+       3. Parse the line into tokens (command and arguments) separated by spaces/tabs.
+       4. If the command is a built-in (exit or env), handle it immediately.
+       5. Otherwise, resolve the command:
+              - If the command contains '/', it is treated as a direct path.
+              - Otherwise, the shell searches executable files in directories listed
+                in the PATH environment variable.
+       6. If the command cannot be found, the shell prints an error message and
+          returns to the main loop. fork(2) is not called in this case.
+       7. If found, the shell creates a child process using fork(2), executes the
+          command in the child with execve(2), and waits for completion in the parent
+          using waitpid(2).
+       8. The exit status of the last executed command is stored and used as the
+          shell’s return value and as the exit status for the exit built-in.
+
+RETURN VALUES
+       The return value of hsh is the exit status of the last executed command.
+
+       The following exit codes are typically used:
+       0      Success
+       1      General error (e.g., fork failure, wait failure, other runtime errors)
+       126    Permission denied / command found but not executable
+       127    Command not found
+
+ERROR MESSAGES
+       Error messages are printed to standard error and follow this format:
+
+           <program>: <command_number>: <command>: <message>
+
+       Example:
+           ./hsh: 1: qwerty: not found
+
+ENVIRONMENT
+       PATH   A colon-separated list of directories used to search for commands when
+              no '/' is present in the command name.
+
+       environ
+              The current environment is passed unchanged to executed programs.
+
+LIMITATIONS
+       This educational shell does not support:
+       - Command separators (;, &&, ||)
+       - Pipes (|)
+       - Redirections (<, >, >>)
+       - Wildcards (*) or globbing
+       - Quoting or escaping (", ', \)
+       - Environment variable expansion ($VAR)
+       - Job control (&, fg, bg)
+       - Command history or line editing
+
+EXAMPLES
+       Interactive usage:
+           $ ./hsh
+           ($) /bin/ls
+           file.c  hsh  shell.c  shell.h
+           ($) env
+           PATH=/usr/bin:/bin
+           HOME=/home/user
+           ($) exit
+           $
+
+       Non-interactive usage:
+           $ echo "/bin/ls" | ./hsh
+           file.c  hsh  shell.c  shell.h
+
+AUTHORS
+       Written by <YOUR_NAME> as part of the Holberton School curriculum.
+
+SEE ALSO
+       sh(1), bash(1), execve(2), fork(2), waitpid(2), environ(7)
+
+HSH(1)                                                                            HSH(1)
