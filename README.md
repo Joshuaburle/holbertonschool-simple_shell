@@ -1,7 +1,3 @@
-echo "ls" | ./hsh
-echo "pwd" | ./hsh
-printf "ls\nwhoami\n" | ./hsh
-gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 # Simple Shell
 
 This README has been tailored to this repository's actual files and assets.
